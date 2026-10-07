@@ -57,7 +57,8 @@ function sanitizeFieldValue(raw: string | undefined | null, fallback: string): s
 export function buildDiscordEmbeds(
   data: RecFormData,
   category: Category,
-  persona: BotPersona
+  persona: BotPersona,
+  options?: { isInteraction?: boolean }
 ): { embeds: DiscordEmbed[]; fileAttachments: { blob: Blob; filename: string }[] } {
   const embeds: DiscordEmbed[] = [];
   const fileAttachments: { blob: Blob; filename: string }[] = [];
@@ -66,11 +67,17 @@ export function buildDiscordEmbeds(
   // Check if category icon is an uploaded base64 image
   let resolvedIconUrl = category.iconUrl;
   if (category.iconUrl && category.iconUrl.startsWith("data:")) {
-    const parsedIcon = parseBase64DataUrl(category.iconUrl);
-    if (parsedIcon) {
-      const iconFilename = `cat_icon_${parsedIcon.filename}`;
-      fileAttachments.push({ blob: parsedIcon.blob, filename: iconFilename });
-      resolvedIconUrl = `attachment://${iconFilename}`;
+    if (options?.isInteraction) {
+      // In synchronous Discord Interaction responses, attachment:// without multipart is rejected by Discord.
+      // Use clean online CDN fallback for interaction embeds
+      resolvedIconUrl = "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f338.png";
+    } else {
+      const parsedIcon = parseBase64DataUrl(category.iconUrl);
+      if (parsedIcon) {
+        const iconFilename = `cat_icon_${parsedIcon.filename}`;
+        fileAttachments.push({ blob: parsedIcon.blob, filename: iconFilename });
+        resolvedIconUrl = `attachment://${iconFilename}`;
+      }
     }
   }
 
@@ -158,11 +165,13 @@ export function buildDiscordEmbeds(
 
   validImages.slice(0, 9).forEach((img, idx) => {
     if (img.startsWith("data:")) {
-      const parsedImg = parseBase64DataUrl(img);
-      if (parsedImg) {
-        const imgFilename = `rec_img_${idx}_${parsedImg.filename}`;
-        fileAttachments.push({ blob: parsedImg.blob, filename: imgFilename });
-        resolvedImageUrls.push(`attachment://${imgFilename}`);
+      if (!options?.isInteraction) {
+        const parsedImg = parseBase64DataUrl(img);
+        if (parsedImg) {
+          const imgFilename = `rec_img_${idx}_${parsedImg.filename}`;
+          fileAttachments.push({ blob: parsedImg.blob, filename: imgFilename });
+          resolvedImageUrls.push(`attachment://${imgFilename}`);
+        }
       }
     } else {
       resolvedImageUrls.push(img);
