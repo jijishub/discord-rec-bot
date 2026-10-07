@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "register-commands": "tsx scripts/register-commands.ts"
+    "register-commands": "tsx scripts/register-commands.ts",
+    "bot": "tsx scripts/bot-gateway.ts"
   },
   "dependencies": {
     "@upstash/redis": "^1.39.0",

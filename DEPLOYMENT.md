@@ -31,8 +31,8 @@ Here is why this architecture is 100% database-free, zero-maintenance, and compl
 2. **Browser `localStorage` Stores Your Categories & Persona**:
    - All your custom categories, 1:1 flower icons, embed border colors, and sender settings are stored instantly in your browser's `localStorage`.
    - You can click **Backup JSON** to download a backup file (`jasmine-categories.json`) or **Import JSON** on any device.
-3. **Discord `#❋・recs` Is Your Permanent Archive**:
-   - The formatted embeds posted to channel `954007611689304114` serve as your persistent, searchable database with Discord search, pins, and history.
+3. **Discord Recommendations Channel Is Your Permanent Archive**:
+   - The formatted embeds posted to your recommendations channel (e.g. `#✻・recs`) serve as your persistent, searchable database with Discord search, pins, and history.
 4. **100% Serverless on Vercel**:
    - No 24/7 server or VPS needed. Vercel spins up only when you post a recommendation or run a Discord slash command, staying well within Vercel's generous free tier forever.
 
@@ -40,26 +40,25 @@ Here is why this architecture is 100% database-free, zero-maintenance, and compl
 
 ---
 
-## 📋 Prerequisites Checklist
+## ✻ Prerequisites Checklist
 
 Before beginning, ensure you have:
-- [x] A **GitHub** account with this repository pushed (`jijishub/discord-rec-bot`).
+- [x] A **GitHub** account with this repository pushed.
 - [x] A **Vercel** free Hobby account ([vercel.com](https://vercel.com)).
-- [x] A **Cloudflare** account managing your domain `jizellecasia.site`.
+- [x] A **Cloudflare** account (if using a custom domain).
 - [x] Access to your Discord Server:
-  - **Server (Guild) ID**: `841595707302740008`
-  - **Recs Channel ID**: `954007611689304114` (`❋・recs`)
-  - **Your User ID**: `841591345259872297`
+  - **Server (Guild) ID**: Right-click your server icon &rarr; **Copy Server ID**
+  - **Recs Channel ID**: Right-click `#✻・recs` &rarr; **Copy Channel ID**
 
 ---
 
-## 🔗 Step 1: Discord Webhook Setup
+## ✿ Step 1: Discord Webhook Setup
 
 1. Open Discord on Desktop or Web.
-2. In your server `◜― ✿ Jizelle's Space ✿`, locate the channel **`❋・recs`** (Channel ID: `954007611689304114`).
-3. Click the **Gear icon (Edit Channel)** next to `❋・recs`.
+2. In your Discord server, locate your recommendation channel (e.g. `#✻・recs`).
+3. Click the **Gear icon (Edit Channel)** next to the channel.
 4. Go to **Integrations** &rarr; **Webhooks** &rarr; click **New Webhook**.
-5. Name it **Jasmine** (or **Ayato**).
+5. Name it **Jasmine 🌸**.
 6. Click **Copy Webhook URL**.  
    *It looks like: `https://discord.com/api/webhooks/1234567890/abc-xyz...`*
 7. Save this URL securely; this will be your `DISCORD_WEBHOOK_URL`.
@@ -90,11 +89,11 @@ This step enables in-chat slash commands (`/rec`) and message context menus (`Ap
      - `Embed Links`
      - `Attach Files`
      - `Read Message History`
-   - Copy the generated URL at the bottom, paste it into your browser, select your server (`841595707302740008`), and click **Authorize**.
+    - Copy the generated URL at the bottom, paste it into your browser, select your server, and click **Authorize**.
 
 ---
 
-## 🚀 Step 3: Deploying to Vercel (Free Tier)
+## ❀ Step 3: Deploying to Vercel
 
 1. Go to [Vercel](https://vercel.com) and log in.
 2. Click **Add New...** &rarr; **Project**.
@@ -107,12 +106,12 @@ This step enables in-chat slash commands (`/rec`) and message context menus (`Ap
 | Variable Name | Description | Example / Value |
 |---|---|---|
 | `DISCORD_WEBHOOK_URL` | Webhook URL from Step 1 | `https://discord.com/api/webhooks/...` |
-| `DISCORD_APPLICATION_ID` | Application ID from Step 2 | `123456789012345678` |
-| `DISCORD_PUBLIC_KEY` | Public Key from Step 2 | `a1b2c3d4e5...` |
-| `DISCORD_BOT_TOKEN` | Bot Token from Step 2 | `MTIzNDU...` |
-| `DISCORD_GUILD_ID` | Your Server ID | `841595707302740008` |
-| `DISCORD_RECS_CHANNEL_ID` | Recs Channel ID | `954007611689304114` |
-| `NEXT_PUBLIC_APP_URL` | Your custom domain | `https://rec.jizellecasia.site` |
+| `DISCORD_APPLICATION_ID` | Application ID from Step 2 | `your_app_id` |
+| `DISCORD_PUBLIC_KEY` | Public Key from Step 2 | `your_public_key` |
+| `DISCORD_BOT_TOKEN` | Bot Token from Step 2 | `your_bot_token` |
+| `DISCORD_GUILD_ID` | Your Server ID | `your_guild_id` |
+| `DISCORD_RECS_CHANNEL_ID` | Recs Channel ID | `your_recs_channel_id` |
+| `NEXT_PUBLIC_APP_URL` | Your custom domain | `https://your-domain.vercel.app` |
 | `BOT_USERNAME` | *(Optional)* Default persona name | `Jasmine 🌸` |
 | `BOT_AVATAR_URL` | *(Optional)* Default avatar image | `/maomao.png` |
 | `AI_API_BASE_URL` | *(Optional)* Reverse proxy URL | `https://your-reverse-proxy.site/v1` |
@@ -182,7 +181,7 @@ This script calls Discord's REST API and registers:
 - **`/rec`** (Slash command with `title`, `category`, `notes`, `image_url` options)
 - **`Turn into Rec`** (Message context menu command when right-clicking any message in Discord)
 
-Because the script registers them directly to Guild `841595707302740008`, the commands appear in your server **instantly** without waiting for the 1-hour global cache!
+Because the script registers them directly to your `DISCORD_GUILD_ID`, the commands appear in your server **instantly** without waiting for the 1-hour global cache!
 
 ---
 

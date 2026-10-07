@@ -3,11 +3,11 @@ dotenv.config();
 
 const APPLICATION_ID = process.env.DISCORD_APPLICATION_ID;
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
-const GUILD_ID = process.env.DISCORD_GUILD_ID || "841595707302740008";
+const GUILD_ID = process.env.DISCORD_GUILD_ID;
 
-if (!APPLICATION_ID || !BOT_TOKEN) {
+if (!APPLICATION_ID || !BOT_TOKEN || !GUILD_ID) {
   console.error(
-    "❌ Error: DISCORD_APPLICATION_ID and DISCORD_BOT_TOKEN are required in your environment variables."
+    "Error: DISCORD_APPLICATION_ID, DISCORD_BOT_TOKEN, and DISCORD_GUILD_ID are required in your environment variables."
   );
   process.exit(1);
 }
