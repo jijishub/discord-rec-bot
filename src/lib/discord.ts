@@ -81,6 +81,12 @@ export function buildDiscordEmbeds(
     }
   }
 
+  // Resolve relative URLs (e.g. /movie.png, /food (drink).png) to absolute public URLs for Discord
+  if (resolvedIconUrl && resolvedIconUrl.startsWith("/")) {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rec.jizellecasia.site";
+    resolvedIconUrl = `${baseUrl.replace(/\/+$/, "")}${encodeURI(resolvedIconUrl)}`;
+  }
+
   // Build description content
   const descriptionParts: string[] = [];
 
