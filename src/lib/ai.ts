@@ -81,6 +81,15 @@ function extractContentFromResponseText(text: string): string {
   }
 }
 
+function cleanCitationLinks(text: string | undefined): string {
+  if (!text) return "";
+  return text
+    .replace(/\s*\(\[[^\]]+\]\(https?:\/\/[^\)]+\)\)/gi, "")
+    .replace(/\s*\[[^\]]+\]\(https?:\/\/[^\)]*utm_source=[^\)]*\)/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /**
  * Robust JSON extractor from model output (handles markdown blocks, raw text, etc.)
  */
@@ -100,7 +109,18 @@ function parseRecommendationJson(rawContent: string): AIEnhanceResult {
     }
   }
 
-  return JSON.parse(cleaned);
+  const result: AIEnhanceResult = JSON.parse(cleaned);
+
+  return {
+    ...result,
+    title: cleanCitationLinks(result.title),
+    tags: cleanCitationLinks(result.tags),
+    duration: cleanCitationLinks(result.duration),
+    creator: cleanCitationLinks(result.creator),
+    platform: cleanCitationLinks(result.platform),
+    description: cleanCitationLinks(result.description),
+    personalNotes: cleanCitationLinks(result.personalNotes),
+  };
 }
 
 export async function enhanceRecWithAI(
@@ -144,13 +164,11 @@ You MUST tailor all details, tags, synopsis, duration, creator, and platform str
 - If "${categoryContext}" is "Apps", "Websites", or "Products":
   • Focus on the software tool, site, or physical product, its key utility, developer/brand, and supported platforms.
 
-Output formatting:
+CRITICAL DISCORD METADATA FORMATTING RULES:
+- Keep "duration" concise and short (under 80 characters, e.g. "2 Volumes / ~224 pages" or "13 Episodes", NOT a long essay).
+- Keep "tags" concise (comma-separated genres under 80 characters).
+- Never include citation links, search grounding links, or URLs like [domain.com](https://...) inside any field.
 - Short, engaging synopsis (description) without spoilers (2-3 sentences).
-- Tags/Genres (comma-separated, e.g. "Fantasy, Magic, Adventure").
-- Platform / Where to find (strictly appropriate to "${categoryContext}").
-- Duration / Length (strictly appropriate to "${categoryContext}", e.g. episodes/seasons for Anime, volumes for Manga, runtime for Movies).
-- Creator / Studio / Author (strictly appropriate to "${categoryContext}", e.g. Animation Studio or Director for Anime; Mangaka for Manga).
-- Optional personal note / gentle quote.
 
 You must respond with valid JSON strictly conforming to this schema:
 {
@@ -158,8 +176,8 @@ You must respond with valid JSON strictly conforming to this schema:
   "description": "Engaging 2-3 sentence synopsis tailored specifically to the ${categoryContext} format",
   "tags": "Genre1, Genre2, Genre3",
   "platform": "Platform or Where to find (specific to ${categoryContext})",
-  "duration": "Length / Runtime / Episodes / Volumes (specific to ${categoryContext})",
-  "creator": "Creator / Author / Studio / Director (specific to ${categoryContext})",
+  "duration": "Concise Length / Runtime / Episodes / Volumes",
+  "creator": "Creator / Author / Studio / Director",
   "personalNotes": "Optional sweet note or leave empty"
 }
 Output only raw JSON, no markdown codeblocks, no commentary.`;

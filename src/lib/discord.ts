@@ -28,6 +28,32 @@ function parseBase64DataUrl(dataUrl: string): { blob: Blob; filename: string } |
   }
 }
 
+function sanitizeFieldName(raw: string | undefined | null, fallback: string): string {
+  if (!raw) return fallback;
+  // Discord strictly rejects masked links [text](url) in field.name
+  let cleaned = raw.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+  // Strip raw URLs from field names as Discord rejects links in names
+  cleaned = cleaned.replace(/https?:\/\/\S+/gi, "").trim();
+  // Strip dangling empty parens left behind by citations: ()
+  cleaned = cleaned.replace(/\(\s*\)/g, "").trim();
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+  if (!cleaned) return fallback;
+  if (cleaned.length > 256) {
+    return cleaned.slice(0, 250) + "...";
+  }
+  return cleaned;
+}
+
+function sanitizeFieldValue(raw: string | undefined | null, fallback: string): string {
+  if (!raw) return fallback;
+  let cleaned = raw.trim();
+  if (!cleaned) return fallback;
+  if (cleaned.length > 1024) {
+    return cleaned.slice(0, 1020) + "...";
+  }
+  return cleaned;
+}
+
 export function buildDiscordEmbeds(
   data: RecFormData,
   category: Category,
@@ -68,14 +94,14 @@ export function buildDiscordEmbeds(
     descriptionParts.push(formattedNotes);
   }
 
-  // Build metadata fields
+  // Build metadata fields with strict Discord validation
   const fields = [];
 
   // Field 1: Tags & Platform
   if (data.tags || data.platform) {
     fields.push({
-      name: data.tags?.trim() || "Tags",
-      value: data.platform?.trim() || "Available everywhere",
+      name: sanitizeFieldName(data.tags, "Tags / Genres"),
+      value: sanitizeFieldValue(data.platform, "Available everywhere"),
       inline: true,
     });
   }
@@ -83,19 +109,36 @@ export function buildDiscordEmbeds(
   // Field 2: Duration & Creator
   if (data.duration || data.creator) {
     fields.push({
-      name: data.duration?.trim() || "Duration / Length",
-      value: data.creator?.trim() || "Creator / Author",
+      name: sanitizeFieldName(data.duration, "Duration / Length"),
+      value: sanitizeFieldValue(data.creator, "Author / Director / Studio"),
       inline: true,
     });
   }
 
   const sharedUrl = "https://rec.jizellecasia.site";
 
+  let fullDescription = descriptionParts.join("\n").trim();
+  if (fullDescription.length > 4096) {
+    fullDescription = fullDescription.slice(0, 4090) + "...";
+  }
+
+  let title = (data.title || "Recommendation").trim();
+  if (title.length > 256) {
+    title = title.slice(0, 250) + "...";
+  }
+
+  let footerText = (data.source
+    ? `Rec by ${data.source}`
+    : persona.footerText.replace("{source}", "Jizelle")).trim();
+  if (footerText.length > 2048) {
+    footerText = footerText.slice(0, 2040) + "...";
+  }
+
   // Primary Embed
   const primaryEmbed: DiscordEmbed = {
-    title: data.title || "Recommendation",
+    title: title,
     url: sharedUrl,
-    description: descriptionParts.join("\n") || undefined,
+    description: fullDescription || undefined,
     color: embedColor,
     author: {
       name: category.name,
@@ -103,9 +146,7 @@ export function buildDiscordEmbeds(
     },
     thumbnail: resolvedIconUrl ? { url: resolvedIconUrl } : undefined,
     footer: {
-      text: data.source
-        ? `Rec by ${data.source}`
-        : persona.footerText.replace("{source}", "Jizelle"),
+      text: footerText,
       icon_url: persona.footerIconUrl || resolvedIconUrl || undefined,
     },
     fields: fields.length > 0 ? fields : undefined,
