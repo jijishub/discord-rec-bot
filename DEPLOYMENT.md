@@ -117,9 +117,23 @@ This step enables in-chat slash commands (`/rec`) and message context menus (`Ap
 | `BOT_AVATAR_URL` | *(Optional)* Default avatar image | `/maomao.png` |
 | `AI_API_BASE_URL` | *(Optional)* Reverse proxy URL | `https://your-reverse-proxy.site/v1` |
 | `AI_API_KEY` | *(Optional)* Reverse proxy token | `your_token` |
-| `AI_DEFAULT_MODEL` | *(Optional)* Default AI model | `gemini-1.5-pro` or `5.6-luna` |
+| `AI_DEFAULT_MODEL` | *(Optional)* Default AI model | `gemini-1.5-pro` or `gpt-5.6-luna` |
+| `UPSTASH_REDIS_REST_URL` | *(Optional)* Auto-linked via Vercel Storage | `https://...upstash.io` |
+| `UPSTASH_REDIS_REST_TOKEN` | *(Optional)* Auto-linked via Vercel Storage | `your_token` |
 
 6. Click **Deploy**. Vercel will build and deploy your project in ~1-2 minutes!
+
+---
+
+### ☁️ Step 3.5: Linking Free Upstash Redis (1-Click Cross-Device Sync)
+To make your custom uploaded 1:1 flower icons, categories, and persona permanently persist across all phones, tablets, and computers without losing them on cache clears:
+1. In your Vercel Project Dashboard, click the **Storage** tab at the top.
+2. Click **Create Database** &rarr; select **Upstash** (or **KV**).
+3. Click **Continue** (select free region close to you).
+4. Click **Connect to Project** and choose your `discord-rec-bot` repository.
+5. Vercel automatically populates `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` (or `KV_REST_API_...`)!
+6. Trigger a **Redeploy** on Vercel so the live deployment picks up the connection.
+7. Done! The web studio and Discord slash commands will now permanently read and save categories from the cloud.
 
 ---
 

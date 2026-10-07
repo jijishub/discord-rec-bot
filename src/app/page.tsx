@@ -34,6 +34,7 @@ export default function Home() {
   const [serverConfig, setServerConfig] = useState<{
     hasWebhook: boolean;
     hasAi: boolean;
+    hasRedis?: boolean;
     defaultModel: string;
     defaultPersona?: BotPersona;
   } | null>(null);
@@ -71,7 +72,7 @@ export default function Home() {
     text: string;
   } | null>(null);
 
-  // Load server config and saved configurations from localStorage on mount
+  // Load server config, cloud Upstash data, and saved configurations from localStorage on mount
   useEffect(() => {
     // 1. Fetch server environment status
     fetch("/api/config")
@@ -84,7 +85,7 @@ export default function Home() {
             model: prev.model || cfg.defaultModel,
           }));
         }
-        if (cfg?.defaultPersona) {
+        if (cfg?.defaultPersona && !cfg?.hasRedis) {
           const savedPersona = localStorage.getItem("jasmine_persona");
           if (!savedPersona) {
             setPersona(cfg.defaultPersona);
@@ -103,7 +104,34 @@ export default function Home() {
       })
       .catch((e) => console.error("Could not fetch server config", e));
 
-    // 2. Load localStorage settings
+    // 2. Fetch categories from Upstash Cloud if available
+    fetch("/api/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.categories && Array.isArray(data.categories) && data.categories.length > 0) {
+          if (data.isCloud) {
+            setCategories(data.categories);
+            localStorage.setItem("jasmine_categories", JSON.stringify(data.categories));
+            setSelectedCatId((prev) =>
+              data.categories.some((c: Category) => c.id === prev) ? prev : data.categories[0].id
+            );
+          }
+        }
+      })
+      .catch((e) => console.error("Could not fetch cloud categories", e));
+
+    // 3. Fetch persona from Upstash Cloud if available
+    fetch("/api/persona")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.persona && data.isCloud) {
+          setPersona(data.persona);
+          localStorage.setItem("jasmine_persona", JSON.stringify(data.persona));
+        }
+      })
+      .catch((e) => console.error("Could not fetch cloud persona", e));
+
+    // 4. Load localStorage settings as immediate local cache
     try {
       const savedCats = localStorage.getItem("jasmine_categories");
       if (savedCats) {
@@ -141,24 +169,39 @@ export default function Home() {
     }
   }, []);
 
-  // Save changes to localStorage
+  // Save changes to localStorage and Upstash Redis
   const handleSaveCategories = (updated: Category[]) => {
     setCategories(updated);
     localStorage.setItem("jasmine_categories", JSON.stringify(updated));
     if (!updated.some((c) => c.id === selectedCatId)) {
       setSelectedCatId(updated[0]?.id || "");
     }
+    fetch("/api/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ categories: updated }),
+    }).catch((e) => console.error("Could not sync categories to cloud", e));
   };
 
   const handleResetCategories = () => {
     setCategories(DEFAULT_CATEGORIES);
     setSelectedCatId(DEFAULT_CATEGORIES[0].id);
     localStorage.setItem("jasmine_categories", JSON.stringify(DEFAULT_CATEGORIES));
+    fetch("/api/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ categories: DEFAULT_CATEGORIES }),
+    }).catch((e) => console.error("Could not reset categories in cloud", e));
   };
 
   const handleSavePersona = (updated: BotPersona) => {
     setPersona(updated);
     localStorage.setItem("jasmine_persona", JSON.stringify(updated));
+    fetch("/api/persona", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ persona: updated }),
+    }).catch((e) => console.error("Could not sync persona to cloud", e));
   };
 
   const handleSaveWebhookUrl = (url: string) => {
@@ -846,6 +889,7 @@ export default function Home() {
         categories={categories}
         onSaveCategories={handleSaveCategories}
         onResetCategories={handleResetCategories}
+        isCloudConnected={!!serverConfig?.hasRedis}
       />
 
       <SettingsModal

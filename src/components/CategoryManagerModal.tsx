@@ -10,6 +10,7 @@ interface Props {
   categories: Category[];
   onSaveCategories: (updated: Category[]) => void;
   onResetCategories: () => void;
+  isCloudConnected?: boolean;
 }
 
 const PASTEL_PRESETS = [
@@ -33,6 +34,7 @@ export default function CategoryManagerModal({
   categories,
   onSaveCategories,
   onResetCategories,
+  isCloudConnected,
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -216,6 +218,23 @@ export default function CategoryManagerModal({
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Cloud Persistence Banner */}
+        {isCloudConnected ? (
+          <div className="px-6 py-2.5 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between text-xs text-emerald-800">
+            <span className="flex items-center gap-1.5 font-medium">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span><strong>Upstash Cloud Sync Active:</strong> Category &amp; icon edits save permanently across all devices!</span>
+            </span>
+          </div>
+        ) : (
+          <div className="px-6 py-2 bg-pink-50/60 border-b border-pink-100/60 flex items-center justify-between text-[11px] text-slate-500">
+            <span className="flex items-center gap-1.5">
+              <span>💾</span>
+              <span>Saved in browser localStorage. Add Upstash Redis in Vercel Storage for instant cross-device cloud sync.</span>
+            </span>
+          </div>
+        )}
 
         {/* Content */}
         <div className="p-6 overflow-y-auto space-y-6 flex-1">

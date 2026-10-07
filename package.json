@@ -10,6 +10,7 @@
     "register-commands": "tsx scripts/register-commands.ts"
   },
   "dependencies": {
+    "@upstash/redis": "^1.39.0",
     "discord-interactions": "^4.1.1",
     "lucide-react": "^1.16.0",
     "next": "^15.1.0",

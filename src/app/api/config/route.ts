@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import { getRedis } from "@/lib/redis";
 
 export async function GET() {
   const hasWebhook = !!process.env.DISCORD_WEBHOOK_URL;
   const hasAi = !!process.env.AI_API_BASE_URL;
+  const hasRedis = !!getRedis();
   const defaultModel = process.env.AI_DEFAULT_MODEL || "gpt-5.6-luna";
 
   const defaultPersona = {
@@ -15,6 +17,7 @@ export async function GET() {
   return NextResponse.json({
     hasWebhook,
     hasAi,
+    hasRedis,
     defaultModel,
     defaultPersona,
   });

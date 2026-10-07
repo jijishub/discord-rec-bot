@@ -20,6 +20,7 @@ interface Props {
   serverConfig?: {
     hasWebhook: boolean;
     hasAi: boolean;
+    hasRedis?: boolean;
     defaultModel: string;
     defaultPersona?: BotPersona;
   };
@@ -292,7 +293,7 @@ export default function SettingsModal({
                   Live Preview &amp; Sender Customization
                 </p>
                 <p className="text-[11px] text-pink-700 mt-1 leading-relaxed">
-                  Modifying your name and avatar here <strong>saves permanently</strong> to your browser (<code className="bg-pink-100 px-1 py-0.5 rounded">localStorage</code>) and immediately updates the live Discord preview card on the right!
+                  Modifying your name and avatar here updates the live Discord preview card{serverConfig?.hasRedis ? " and automatically syncs to Upstash Redis across all your devices!" : " and saves permanently to your browser localStorage."}
                 </p>
               </div>
 

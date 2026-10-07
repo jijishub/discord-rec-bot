@@ -5,6 +5,7 @@ import {
   verifyKey,
 } from "discord-interactions";
 import { DEFAULT_CATEGORIES, DEFAULT_BOT_PERSONA } from "@/lib/categories";
+import { getStoredCategories, getStoredPersona } from "@/lib/redis";
 import { buildDiscordEmbeds, sendWebhook } from "@/lib/discord";
 
 export async function POST(req: NextRequest) {
@@ -55,8 +56,11 @@ export async function POST(req: NextRequest) {
       const notes = notesOption?.value as string;
       const imageUrl = imageOption?.value as string;
 
+      const { categories } = await getStoredCategories();
+      const { persona } = await getStoredPersona();
+
       const category =
-        DEFAULT_CATEGORIES.find((c) => c.id === categoryId) || DEFAULT_CATEGORIES[0];
+        categories.find((c) => c.id === categoryId) || categories[0] || DEFAULT_CATEGORIES[0];
 
       // Build and send to webhook
       const recData = {
@@ -68,11 +72,11 @@ export async function POST(req: NextRequest) {
         source: interaction.member?.user?.username || interaction.user?.username || "Jasmine",
       };
 
-      const { embeds, fileAttachments } = buildDiscordEmbeds(recData, category, DEFAULT_BOT_PERSONA);
+      const { embeds, fileAttachments } = buildDiscordEmbeds(recData, category, persona);
 
       await sendWebhook({
-        username: DEFAULT_BOT_PERSONA.username,
-        avatar_url: DEFAULT_BOT_PERSONA.avatarUrl,
+        username: persona.username,
+        avatar_url: persona.avatarUrl,
         embeds,
       }, undefined, fileAttachments);
 
@@ -98,7 +102,9 @@ export async function POST(req: NextRequest) {
         const attachments = targetMessage.attachments || [];
         const imageUrls = attachments.map((att: { url: string }) => att.url);
 
-        const category = DEFAULT_CATEGORIES[0];
+        const { categories } = await getStoredCategories();
+        const { persona } = await getStoredPersona();
+        const category = categories[0] || DEFAULT_CATEGORIES[0];
         const recData = {
           categoryId: category.id,
           title: rawContent.split("\n")[0]?.slice(0, 80) || "Recommendation",
@@ -107,10 +113,10 @@ export async function POST(req: NextRequest) {
           source: targetMessage.author?.username || "Discord",
         };
 
-        const { embeds, fileAttachments } = buildDiscordEmbeds(recData, category, DEFAULT_BOT_PERSONA);
+        const { embeds, fileAttachments } = buildDiscordEmbeds(recData, category, persona);
         await sendWebhook({
-          username: DEFAULT_BOT_PERSONA.username,
-          avatar_url: DEFAULT_BOT_PERSONA.avatarUrl,
+          username: persona.username,
+          avatar_url: persona.avatarUrl,
           embeds,
         }, undefined, fileAttachments);
 
