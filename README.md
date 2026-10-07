@@ -1,33 +1,95 @@
-# 🌸 Jasmine ┆ Discord Recommendation Studio & Gateway ୨୧
+# ୨୧ Jasmine ┆ Discord Recommendation Studio & Gateway 🌸🧋
 
-> ✿ Minimalist pastel recommendation curator for Discord  
-> ❀ Aesthetic: Baby pink, Sakura blossoms, and clean typography
+> 🍡 **Aesthetic Japanese Café & Milktea Curator for Discord**  
+> 🎐 **Palette & Mood**: Baby pink (`#fce7f3`), Ayato pastel blue (`#c0c8ff`), Milktea boba (`#ffd2af`), Dango mochi (`#9cf8b5`), and Sakura blossoms 🌸
 
 ---
 
-## ✿ Features
+## ✿ System Architecture
 
-- ✧ **Dynamic Categories & Custom Icons**:
+```
+                       ┌──────────────────────────────────────────────┐
+                       │          🌐 Cloudflare DNS & SSL            │
+                       │           rec.jizellecasia.site              │
+                       └──────────────────────┬───────────────────────┘
+                                              │
+                                              ▼
+               ┌─────────────────────────────────────────────────────────────┐
+               │             ☁️ Vercel Serverless Platform                   │
+               │                                                             │
+               │  ┌───────────────────────┐   ┌───────────────────────────┐  │
+               │  │  🌸 Web Studio UI     │   │  ⚡ Route Handlers (API)  │  │
+               │  │  Next.js 15 App Router│◄──┤  • /api/webhook/send      │  │
+               │  │  React 19 + Tailwind  │   │  • /api/interactions      │  │
+               │  │  1:1 Canvas Cropper   │   │  • /api/categories        │  │
+               │  │  Live Embed Preview   │   │  • /api/persona           │  │
+               │  └───────────────────────┘   │  • /api/ai/enhance        │  │
+               │                              └───────┬───────────┬───────┘  │
+               └──────────────────────────────────────┼───────────┼──────────┘
+                                                      │           │
+                     ┌────────────────────────────────┘           └────────────────────────────────┐
+                     ▼                                                                             ▼
+      ┌─────────────────────────────┐                                               ┌─────────────────────────────┐
+      │   🍵 Upstash Redis Cloud    │                                               │   🌸 AI Reverse Proxy       │
+      │   Zero-latency serverless   │                                               │   your-ai-endpoint.example/v1  │
+      │   sync for categories, 1:1  │                                               │   gpt-5.6-luna, Gemini Pro  │
+      │   icons, and bot persona    │                                               │   Category-aware curation   │
+      └─────────────────────────────┘                                               └─────────────────────────────┘
+                     ▲
+                     │
+                     ▼
+      ┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+      │                                            💬 Discord Platform                                            │
+      │                                                                                                           │
+      │   1. Webhook Dispatch ───────────────► Embeds + Multipart Images uploaded to cdn.discordapp.com           │
+      │   2. HTTP Slash Commands (/rec) ─────► Verified via Ed25519 (TweetNaCl) without Gateway overhead          │
+      │   3. 24/7 Gateway Presence Worker ───► Connected via wss://gateway.discord.gg (Google Cloud Host)         │
+      │                                        Displays 🟢 Online & "Watching ✻・recs" in Member Sidebar          │
+      └───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🧋 Tech Stack
+
+| Component | Technology | Description |
+|---|---|---|
+| **Frontend Framework** | **Next.js 15 (App Router)** | Modern React server & client components with streaming |
+| **UI Library** | **React 19 & Tailwind CSS** | Soft pastel theme, responsive grid, glassmorphic modals |
+| **Icons & Symbols** | **Lucide Icons & Coolsymbols** | Clean UI icons paired with Japanese dango / sakura typography |
+| **Image Processing** | **HTML5 Canvas API** | 1:1 square auto-centering cropper with client-side compression |
+| **Cloud Database** | **Upstash Redis (REST)** | Serverless key-value persistence for categories, icons & persona |
+| **Local Cache** | **Browser localStorage** | Zero-flicker instant offline state fallback |
+| **Security & Auth** | **discord-interactions** | Ed25519 cryptographic signature verification for HTTP commands |
+| **Bot Gateway** | **Node.js Native WebSocket** | Zero-dependency 24/7 background worker for Discord Presence |
+| **AI Curator** | **OpenAI-Compatible Proxy** | Reverse proxy endpoint (`gpt-5.6-luna`, `gemini-1.5-pro`, etc.) |
+| **Hosting & DNS** | **Vercel & Cloudflare** | Free serverless edge deployment with custom CNAME SSL |
+
+---
+
+## 🌸 Key Features
+
+- 🍡 **Dynamic Categories & 1:1 Icon Uploads**:
   - Add, edit, or customize any category (name, emoji, border accent color, thumbnail icon) directly in the web UI.
   - No hardcoding: update categories and flower icons anytime without redeploying code.
-  - Optional cloud persistence via Upstash Redis or local storage backup.
+  - Automatically syncs to Upstash Redis across all devices.
 
-- ✧ **Multi-Image Mosaic Galleries**:
+- 🧋 **Multi-Image Mosaic Galleries**:
   - Drag-and-drop or link up to 9 images per recommendation.
   - Automatically formatted into a Discord media mosaic gallery.
 
-- ✧ **Live Discord Dark Mode Preview**:
+- 🎐 **Live Discord Dark Mode Preview**:
   - Real-time side-by-side preview reproducing your server's exact Discord embed layout (category header, title, synopsis, blockquote personal notes, 2-column inline metadata, top-right category icon, and custom footer).
 
-- ✧ **AI Auto-Fill & Aesthetic Curator**:
-  - Connects to any OpenAI-compatible reverse proxy (e.g. `https://your-ai-endpoint.example/v1`, supporting `gpt-5.6-luna`, `gemini-1.5-pro`, etc.).
+- 🍵 **Category-Aware AI Auto-Fill**:
+  - Connects to your reverse proxy (`https://your-ai-endpoint.example/v1`, supporting `gpt-5.6-luna`, `gemini-1.5-pro`, etc.).
   - Reads the active category to provide format-specific details (e.g. distinguishing an anime adaptation from its original manga publication).
 
-- ✧ **100% Serverless on Vercel**:
+- 🤍 **100% Serverless on Vercel**:
   - Zero always-on server costs. Runs on-demand via Vercel Serverless Functions.
   - Deployable under a custom domain via Cloudflare DNS.
 
-- ✧ **In-Discord Slash Commands & Context Menu**:
+- 🎀 **In-Discord Slash Commands & Context Menu**:
   - Serverless Discord Interactions endpoint (`/api/interactions`) supporting `/rec` slash commands and right-click message context menu (`Apps -> Turn into Rec`).
 
 ---
@@ -98,12 +160,12 @@ This registers the commands specifically to your server (`DISCORD_GUILD_ID`) ins
 
 ---
 
-## ✦ Keeping Jasmine Online 24/7 (Gateway)
+## ✦ Keeping Jasmine Online 24/7 (Gateway Worker)
 
 ### Why is Jasmine marked as "Offline" by default?
-- Our web studio and Discord commands run **100% Serverless on Vercel** via Discord's modern **HTTP Interactions Endpoint**.
+- The web studio and Discord commands run **100% Serverless on Vercel** via Discord's modern **HTTP Interactions Endpoint**.
 - Serverless functions execute instantly when called, without keeping an idle background connection open.
-- The green "Online" dot in Discord's server member sidebar is controlled by an active **Gateway WebSocket connection** (`wss://gateway.discord.gg`).
+- The green "Online" circle in Discord's server member sidebar is controlled by an active **Gateway WebSocket connection** (`wss://gateway.discord.gg`).
 - Slash commands and webhooks work completely even when the bot appears offline.
 
 ### How to show Jasmine as "Online":
@@ -111,7 +173,7 @@ If you'd like Jasmine to display the green "Online" dot and custom activity stat
 ```bash
 npm run bot
 ```
-*(You can run this locally or host `scripts/bot-gateway.ts` on any free background worker like Render, Railway, fly.io, or a VPS).*
+*(You can also host `gateway-standalone/bot.js` alongside `your-ai-endpoint.example` on Google Cloud or any 24/7 background worker. See [JASMINE.md](./JASMINE.md) for step-by-step instructions).*
 
 ---
 
@@ -149,4 +211,4 @@ Customize categories and flower icons directly from the web interface:
 
 ## ୨୧ License
 
-MIT License. Designed with care for aesthetic Discord curation.
+MIT License. Designed with care for aesthetic Discord curation 🌸🧋🍡
