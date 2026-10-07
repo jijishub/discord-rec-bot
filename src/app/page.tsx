@@ -35,6 +35,7 @@ export default function Home() {
     hasWebhook: boolean;
     hasAi: boolean;
     defaultModel: string;
+    defaultPersona?: BotPersona;
   } | null>(null);
 
   // Modal open states
@@ -83,6 +84,22 @@ export default function Home() {
             model: prev.model || cfg.defaultModel,
           }));
         }
+        if (cfg?.defaultPersona) {
+          const savedPersona = localStorage.getItem("jasmine_persona");
+          if (!savedPersona) {
+            setPersona(cfg.defaultPersona);
+          } else {
+            try {
+              const parsed = JSON.parse(savedPersona);
+              if (parsed.username === "Ayato ┆ ˚ ༘ ๋" || parsed.avatarUrl === "https://i.imgur.com/K1b5T3v.png") {
+                setPersona(cfg.defaultPersona);
+                localStorage.setItem("jasmine_persona", JSON.stringify(cfg.defaultPersona));
+              }
+            } catch {
+              setPersona(cfg.defaultPersona);
+            }
+          }
+        }
       })
       .catch((e) => console.error("Could not fetch server config", e));
 
@@ -99,7 +116,10 @@ export default function Home() {
 
       const savedPersona = localStorage.getItem("jasmine_persona");
       if (savedPersona) {
-        setPersona(JSON.parse(savedPersona));
+        const parsed = JSON.parse(savedPersona);
+        if (parsed.username !== "Ayato ┆ ˚ ༘ ๋" && parsed.avatarUrl !== "https://i.imgur.com/K1b5T3v.png") {
+          setPersona(parsed);
+        }
       }
 
       const savedWebhook = localStorage.getItem("jasmine_webhook_url");

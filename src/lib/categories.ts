@@ -1,9 +1,9 @@
 import { Category, BotPersona } from "@/types";
 
 export const DEFAULT_BOT_PERSONA: BotPersona = {
-  username: "Ayato ┆ ˚ ༘ ๋",
-  avatarUrl: "https://i.imgur.com/K1b5T3v.png", // Ayato pastel avatar
-  footerText: "Rec by {source}",
+  username: process.env.BOT_USERNAME || "Jasmine 🌸",
+  avatarUrl: process.env.BOT_AVATAR_URL || "/maomao.png",
+  footerText: process.env.BOT_FOOTER || "Rec by {source}",
   footerIconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f338.png", // 🌸
 };
 

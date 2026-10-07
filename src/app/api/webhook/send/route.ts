@@ -34,9 +34,15 @@ export async function POST(req: NextRequest) {
 
     const { embeds, fileAttachments } = buildDiscordEmbeds(data, category, persona);
 
+    let avatarUrl = persona.avatarUrl || process.env.BOT_AVATAR_URL || "/maomao.png";
+    if (avatarUrl && avatarUrl.startsWith("/")) {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rec.jizellecasia.site";
+      avatarUrl = `${baseUrl.replace(/\/+$/, "")}${avatarUrl}`;
+    }
+
     const payload = {
-      username: persona.username || "Jasmine 🌸",
-      avatar_url: persona.avatarUrl || undefined,
+      username: persona.username || process.env.BOT_USERNAME || "Jasmine 🌸",
+      avatar_url: avatarUrl || undefined,
       embeds: embeds,
     };
 

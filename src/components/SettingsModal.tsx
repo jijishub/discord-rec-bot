@@ -21,6 +21,7 @@ interface Props {
     hasWebhook: boolean;
     hasAi: boolean;
     defaultModel: string;
+    defaultPersona?: BotPersona;
   };
 }
 
@@ -303,7 +304,7 @@ export default function SettingsModal({
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. Ayato ┆ ˚ ༘ ๋ or Jasmine 🌸"
+                  placeholder="e.g. Jasmine 🌸"
                   className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-pink-300 font-medium bg-white"
                 />
               </div>
@@ -315,7 +316,7 @@ export default function SettingsModal({
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/40">
                   <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-pink-200 bg-white shadow-xs shrink-0">
                     <img
-                      src={avatarUrl || "https://i.imgur.com/K1b5T3v.png"}
+                      src={avatarUrl || serverConfig?.defaultPersona?.avatarUrl || "/maomao.png"}
                       alt="Avatar Preview"
                       className="w-full h-full object-cover"
                     />
@@ -341,7 +342,7 @@ export default function SettingsModal({
                       {avatarUrl && avatarUrl.startsWith("data:") && (
                         <button
                           type="button"
-                          onClick={() => setAvatarUrl("https://i.imgur.com/K1b5T3v.png")}
+                          onClick={() => setAvatarUrl(serverConfig?.defaultPersona?.avatarUrl || "/maomao.png")}
                           className="px-2 py-1 text-xs text-rose-500 hover:text-rose-700"
                         >
                           Reset

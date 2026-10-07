@@ -18,14 +18,14 @@ export default function DiscordEmbedPreview({ data, category, persona }: Props) 
       {/* Discord Message Header */}
       <div className="flex items-start gap-3.5 mb-2">
         <img
-          src={persona.avatarUrl || "https://i.imgur.com/K1b5T3v.png"}
+          src={persona.avatarUrl || "/maomao.png"}
           alt={persona.username}
           className="w-10 h-10 rounded-full object-cover shrink-0 select-none shadow"
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-semibold text-white text-[15px] hover:underline cursor-pointer">
-              {persona.username || "Ayato ┆ ˚ ༘ ๋"}
+              {persona.username || "Jasmine 🌸"}
             </span>
             <span className="bg-[#5865F2] text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center leading-none">
               APP

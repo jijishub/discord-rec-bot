@@ -113,6 +113,8 @@ This step enables in-chat slash commands (`/rec`) and message context menus (`Ap
 | `DISCORD_GUILD_ID` | Your Server ID | `841595707302740008` |
 | `DISCORD_RECS_CHANNEL_ID` | Recs Channel ID | `954007611689304114` |
 | `NEXT_PUBLIC_APP_URL` | Your custom domain | `https://rec.jizellecasia.site` |
+| `BOT_USERNAME` | *(Optional)* Default persona name | `Jasmine 🌸` |
+| `BOT_AVATAR_URL` | *(Optional)* Default avatar image | `/maomao.png` |
 | `AI_API_BASE_URL` | *(Optional)* Reverse proxy URL | `https://your-reverse-proxy.site/v1` |
 | `AI_API_KEY` | *(Optional)* Reverse proxy token | `your_token` |
 | `AI_DEFAULT_MODEL` | *(Optional)* Default AI model | `gemini-1.5-pro` or `5.6-luna` |
@@ -216,7 +218,7 @@ If you want one-click AI auto-filling:
 - In Discord embeds, sending multiple image embeds with the exact same `url` groups them into a Discord media mosaic gallery. Jasmine supports up to 9 images per recommendation.
 
 #### Q: Can I change the bot's username or avatar picture?
-- Yes! Open **Settings ⚙️** on the website &rarr; **Bot Persona**. You can change the display name (e.g. `Ayato ┆ ˚ ༘ ๋` or `Jasmine 🌸`) and avatar profile image URL anytime without redeploying code.
+- Yes! Default is **`Jasmine 🌸`** and **`/maomao.png`**. You can configure server-wide defaults in `.env` / Vercel (`BOT_USERNAME` and `BOT_AVATAR_URL`), or customize it per-browser in **Settings ⚙️** &rarr; **Bot Persona**.
 
 #### Q: Do I need to pay anything?
 - **Zero dollars.** Vercel Hobby tier is free, Cloudflare DNS is free, Discord Webhooks & CDN are free, and your AI proxy models (`5.6-luna`, Gemini Pro) are free as stated in your context.

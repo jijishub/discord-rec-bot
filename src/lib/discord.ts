@@ -159,6 +159,12 @@ export async function sendWebhook(
     };
   }
 
+  // Ensure relative avatar URL is resolved to absolute URL
+  if (payload.avatar_url && payload.avatar_url.startsWith("/")) {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rec.jizellecasia.site";
+    payload.avatar_url = `${baseUrl.replace(/\/+$/, "")}${payload.avatar_url}`;
+  }
+
   try {
     let res: Response;
 

@@ -5,9 +5,17 @@ export async function GET() {
   const hasAi = !!process.env.AI_API_BASE_URL;
   const defaultModel = process.env.AI_DEFAULT_MODEL || "gpt-5.6-luna";
 
+  const defaultPersona = {
+    username: process.env.BOT_USERNAME || "Jasmine 🌸",
+    avatarUrl: process.env.BOT_AVATAR_URL || "/maomao.png",
+    footerText: process.env.BOT_FOOTER || "Rec by {source}",
+    footerIconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f338.png",
+  };
+
   return NextResponse.json({
     hasWebhook,
     hasAi,
     defaultModel,
+    defaultPersona,
   });
 }
