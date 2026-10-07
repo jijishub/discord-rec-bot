@@ -1,4 +1,4 @@
-# ୨୧ Jasmine ┆ Discord Recommendation Studio & Gateway
+# 🌸 Jasmine ┆ Discord Recommendation Studio & Gateway ୨୧
 
 > ✿ Minimalist pastel recommendation curator for Discord  
 > ❀ Aesthetic: Baby pink, Sakura blossoms, and clean typography

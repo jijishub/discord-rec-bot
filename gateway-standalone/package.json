@@ -1,0 +1,9 @@
+{
+  "name": "jasmine-gateway-worker",
+  "version": "1.0.0",
+  "description": "Zero-dependency 24/7 Discord Gateway presence worker for Jasmine",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  }
+}
