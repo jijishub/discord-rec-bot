@@ -5,65 +5,22 @@
 
 ---
 
-## ✿ System Architecture
+## 🍡 Introduction
 
-```
-                       ┌──────────────────────────────────────────────┐
-                       │          🌐 Cloudflare DNS & SSL            │
-                       │           rec.jizellecasia.site              │
-                       └──────────────────────┬───────────────────────┘
-                                              │
-                                              ▼
-               ┌─────────────────────────────────────────────────────────────┐
-               │             ☁️ Vercel Serverless Platform                   │
-               │                                                             │
-               │  ┌───────────────────────┐   ┌───────────────────────────┐  │
-               │  │  🌸 Web Studio UI     │   │  ⚡ Route Handlers (API)  │  │
-               │  │  Next.js 15 App Router│◄──┤  • /api/webhook/send      │  │
-               │  │  React 19 + Tailwind  │   │  • /api/interactions      │  │
-               │  │  1:1 Canvas Cropper   │   │  • /api/categories        │  │
-               │  │  Live Embed Preview   │   │  • /api/persona           │  │
-               │  └───────────────────────┘   │  • /api/ai/enhance        │  │
-               │                              └───────┬───────────┬───────┘  │
-               └──────────────────────────────────────┼───────────┼──────────┘
-                                                      │           │
-                     ┌────────────────────────────────┘           └────────────────────────────────┐
-                     ▼                                                                             ▼
-      ┌─────────────────────────────┐                                               ┌─────────────────────────────┐
-      │   🍵 Upstash Redis Cloud    │                                               │   🌸 AI Reverse Proxy       │
-      │   Zero-latency serverless   │                                               │   your-ai-endpoint.example/v1  │
-      │   sync for categories, 1:1  │                                               │   gpt-5.6-luna, Gemini Pro  │
-      │   icons, and bot persona    │                                               │   Category-aware curation   │
-      └─────────────────────────────┘                                               └─────────────────────────────┘
-                     ▲
-                     │
-                     ▼
-      ┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-      │                                            💬 Discord Platform                                            │
-      │                                                                                                           │
-      │   1. Webhook Dispatch ───────────────► Embeds + Multipart Images uploaded to cdn.discordapp.com           │
-      │   2. HTTP Slash Commands (/rec) ─────► Verified via Ed25519 (TweetNaCl) without Gateway overhead          │
-      │   3. 24/7 Gateway Presence Worker ───► Connected via wss://gateway.discord.gg (Google Cloud Host)         │
-      │                                        Displays 🟢 Online & "Watching ✻・recs" in Member Sidebar          │
-      └───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-```
+**Jasmine 🌸** is a lightweight, aesthetic recommendation studio designed for Discord communities. It pairs a self-hosted web curation studio with Discord webhooks and slash commands, letting you curate, organize, and publish beautiful recommendations for Anime, Manga, Novels, Movies, Games, Cafés, and more.
 
----
-
-## 🧋 Tech Stack
-
-| Component | Technology | Description |
-|---|---|---|
-| **Frontend Framework** | **Next.js 15 (App Router)** | Modern React server & client components with streaming |
-| **UI Library** | **React 19 & Tailwind CSS** | Soft pastel theme, responsive grid, glassmorphic modals |
-| **Icons & Symbols** | **Lucide Icons & Coolsymbols** | Clean UI icons paired with Japanese dango / sakura typography |
-| **Image Processing** | **HTML5 Canvas API** | 1:1 square auto-centering cropper with client-side compression |
-| **Cloud Database** | **Upstash Redis (REST)** | Serverless key-value persistence for categories, icons & persona |
-| **Local Cache** | **Browser localStorage** | Zero-flicker instant offline state fallback |
-| **Security & Auth** | **discord-interactions** | Ed25519 cryptographic signature verification for HTTP commands |
-| **Bot Gateway** | **Node.js Native WebSocket** | Zero-dependency 24/7 background worker for Discord Presence |
-| **AI Curator** | **OpenAI-Compatible Proxy** | Reverse proxy endpoint (`gpt-5.6-luna`, `gemini-1.5-pro`, etc.) |
-| **Hosting & DNS** | **Vercel & Cloudflare** | Free serverless edge deployment with custom CNAME SSL |
+### 🍵 The Two Halves of Jasmine:
+1. **The Web Studio (`rec.jizellecasia.site`)**:
+   - A clean pastel desktop/mobile interface to create recommendations.
+   - Live side-by-side Discord embed preview card.
+   - Built-in 1:1 square canvas image cropper for custom flower icons and badges.
+   - Multi-image drag-and-drop mosaic gallery support (up to 9 images).
+   - AI Assistant auto-fill powered by your reverse proxy (`gpt-5.6-luna`, Gemini Pro).
+   - Dynamic category manager with cross-device cloud persistence via Upstash Redis.
+2. **The In-Discord Bot (`Jasmine#6656`)**:
+   - Direct Discord slash command (`/rec`) to post recommendations from inside Discord.
+   - Right-click message context menu (`Apps -> Turn into Rec`) to instantly convert any message or photo in chat into an aesthetic recommendation embed in `#✻・recs`.
+   - Lightweight 24/7 gateway worker to display a permanent green **🟢 Online** status.
 
 ---
 
@@ -84,6 +41,7 @@
 - 🍵 **Category-Aware AI Auto-Fill**:
   - Connects to your reverse proxy (`https://your-ai-endpoint.example/v1`, supporting `gpt-5.6-luna`, `gemini-1.5-pro`, etc.).
   - Reads the active category to provide format-specific details (e.g. distinguishing an anime adaptation from its original manga publication).
+  - Auto-expanding instruction box that smoothly adapts to multi-line input.
 
 - 🤍 **100% Serverless on Vercel**:
   - Zero always-on server costs. Runs on-demand via Vercel Serverless Functions.
@@ -91,6 +49,19 @@
 
 - 🎀 **In-Discord Slash Commands & Context Menu**:
   - Serverless Discord Interactions endpoint (`/api/interactions`) supporting `/rec` slash commands and right-click message context menu (`Apps -> Turn into Rec`).
+
+---
+
+## ✿ Category & Icon Customization
+
+Customize categories and flower icons directly from the web interface:
+1. Open your web studio.
+2. Click **Categories & Icons 🎨** in the top navigation.
+3. You can:
+   - Add new categories with custom emojis and accent colors.
+   - Upload 1:1 square flower icons (automatically cropped and previewed).
+   - Export and import JSON backups.
+   - Changes automatically sync across devices when Upstash Redis is connected.
 
 ---
 
@@ -196,16 +167,65 @@ npm run bot
 
 ---
 
-## ✿ Category & Icon Customization
+## 🧋 Tech Stack
 
-Customize categories and flower icons directly from the web interface:
-1. Open your web studio.
-2. Click **Categories & Icons 🎨** in the top navigation.
-3. You can:
-   - Add new categories with custom emojis and accent colors.
-   - Upload 1:1 square flower icons (automatically cropped and previewed).
-   - Export and import JSON backups.
-   - Changes automatically sync across devices when Upstash Redis is connected.
+| Component | Technology | Description |
+|---|---|---|
+| **Frontend Framework** | **Next.js 15 (App Router)** | Modern React server & client components with streaming |
+| **UI Library** | **React 19 & Tailwind CSS** | Soft pastel theme, responsive grid, glassmorphic modals |
+| **Icons & Symbols** | **Lucide Icons & Coolsymbols** | Clean UI icons paired with Japanese dango / sakura typography |
+| **Image Processing** | **HTML5 Canvas API** | 1:1 square auto-centering cropper with client-side compression |
+| **Cloud Database** | **Upstash Redis (REST)** | Serverless key-value persistence for categories, icons & persona |
+| **Local Cache** | **Browser localStorage** | Zero-flicker instant offline state fallback |
+| **Security & Auth** | **discord-interactions** | Ed25519 cryptographic signature verification for HTTP commands |
+| **Bot Gateway** | **Node.js Native WebSocket** | Zero-dependency 24/7 background worker for Discord Presence |
+| **AI Curator** | **OpenAI-Compatible Proxy** | Reverse proxy endpoint (`gpt-5.6-luna`, `gemini-1.5-pro`, etc.) |
+| **Hosting & DNS** | **Vercel & Cloudflare** | Free serverless edge deployment with custom CNAME SSL |
+
+---
+
+## ✿ System Architecture
+
+```
+                       ┌──────────────────────────────────────────────┐
+                       │          🌐 Cloudflare DNS & SSL            │
+                       │           rec.jizellecasia.site              │
+                       └──────────────────────┬───────────────────────┘
+                                              │
+                                              ▼
+               ┌─────────────────────────────────────────────────────────────┐
+               │             ☁️ Vercel Serverless Platform                   │
+               │                                                             │
+               │  ┌───────────────────────┐   ┌───────────────────────────┐  │
+               │  │  🌸 Web Studio UI     │   │  ⚡ Route Handlers (API)  │  │
+               │  │  Next.js 15 App Router│◄──┤  • /api/webhook/send      │  │
+               │  │  React 19 + Tailwind  │   │  • /api/interactions      │  │
+               │  │  1:1 Canvas Cropper   │   │  • /api/categories        │  │
+               │  │  Live Embed Preview   │   │  • /api/persona           │  │
+               │  └───────────────────────┘   │  • /api/ai/enhance        │  │
+               │                              └───────┬───────────┬───────┘  │
+               └──────────────────────────────────────┼───────────┼──────────┘
+                                                      │           │
+                     ┌────────────────────────────────┘           └────────────────────────────────┐
+                     ▼                                                                             ▼
+      ┌─────────────────────────────┐                                               ┌─────────────────────────────┐
+      │   🍵 Upstash Redis Cloud    │                                               │   🌸 AI Reverse Proxy       │
+      │   Zero-latency serverless   │                                               │   your-ai-endpoint.example/v1  │
+      │   sync for categories, 1:1  │                                               │   gpt-5.6-luna, Gemini Pro  │
+      │   icons, and bot persona    │                                               │   Category-aware curation   │
+      └─────────────────────────────┘                                               └─────────────────────────────┘
+                     ▲
+                     │
+                     ▼
+      ┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+      │                                            💬 Discord Platform                                            │
+      │                                                                                                           │
+      │   1. Webhook Dispatch ───────────────► Embeds + Multipart Images uploaded to cdn.discordapp.com           │
+      │   2. HTTP Slash Commands (/rec) ─────► Verified via Ed25519 (TweetNaCl) without Gateway overhead          │
+      │   3. 24/7 Gateway Presence Worker ───► Connected via wss://gateway.discord.gg (Google Cloud Host)         │
+      │                                        Displays 🟢 Online & "Watching ✻・recs" in Member Sidebar          │
+      └───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 

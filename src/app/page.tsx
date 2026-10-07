@@ -614,12 +614,16 @@ export default function Home() {
                     </span>
                   </div>
 
-                  <input
-                    type="text"
+                  <textarea
+                    rows={1}
                     placeholder={`Optional instruction for ${activeCategory.name}: e.g. 'Extract tags and runtime', 'Make it concise'`}
                     value={aiCustomInstruction}
-                    onChange={(e) => setAiCustomInstruction(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-pink-200 bg-white focus:outline-none focus:ring-2 focus:ring-pink-300"
+                    onChange={(e) => {
+                      setAiCustomInstruction(e.target.value);
+                      e.target.style.height = "auto";
+                      e.target.style.height = `${Math.min(Math.max(e.target.scrollHeight, 38), 180)}px`;
+                    }}
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-pink-200 bg-white focus:outline-none focus:ring-2 focus:ring-pink-300 resize-none min-h-[38px] max-h-[180px] overflow-y-auto leading-relaxed"
                   />
 
                   <div className="flex justify-end">
