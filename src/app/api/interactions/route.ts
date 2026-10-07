@@ -109,18 +109,27 @@ export async function POST(req: NextRequest) {
         const notes = notesOption?.value as string;
         const imageUrl = imageOption?.value as string;
 
-        // Extract uploaded image attachment if present (Discord Type 11 ATTACHMENT)
-        let uploadedAttachmentUrl: string | undefined;
-        if (attachmentOption && interaction.data.resolved?.attachments) {
-          const attachment = interaction.data.resolved.attachments[attachmentOption.value];
-          if (attachment?.url) {
-            uploadedAttachmentUrl = attachment.url;
+        const finalImages: string[] = [];
+
+        // 1. Extract all uploaded image attachments (image, image_2, image_3, image_4, etc.)
+        if (interaction.data.resolved?.attachments) {
+          const attachments = Object.values(interaction.data.resolved.attachments) as { url?: string }[];
+          for (const att of attachments) {
+            if (att?.url && !finalImages.includes(att.url)) {
+              finalImages.push(att.url);
+            }
           }
         }
 
-        const finalImages: string[] = [];
-        if (uploadedAttachmentUrl) finalImages.push(uploadedAttachmentUrl);
-        if (imageUrl && !finalImages.includes(imageUrl)) finalImages.push(imageUrl);
+        // 2. Extract URLs from image_url option (supports multiple space or comma-separated links)
+        if (imageUrl && imageUrl.trim()) {
+          const urls = imageUrl.trim().split(/[\s,]+/);
+          for (const u of urls) {
+            if (u.startsWith("http") && !finalImages.includes(u)) {
+              finalImages.push(u);
+            }
+          }
+        }
 
         const category =
           activeCategories.find(

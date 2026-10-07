@@ -35,8 +35,26 @@ const commands = [
       },
       {
         name: "image",
-        description: "Upload an image/poster directly from your device",
+        description: "Primary image / poster (Upload)",
         type: 11, // ATTACHMENT (File upload)
+        required: false,
+      },
+      {
+        name: "image_2",
+        description: "2nd image for mosaic gallery (Upload)",
+        type: 11, // ATTACHMENT
+        required: false,
+      },
+      {
+        name: "image_3",
+        description: "3rd image for mosaic gallery (Upload)",
+        type: 11, // ATTACHMENT
+        required: false,
+      },
+      {
+        name: "image_4",
+        description: "4th image for mosaic gallery (Upload)",
+        type: 11, // ATTACHMENT
         required: false,
       },
       {
@@ -47,7 +65,7 @@ const commands = [
       },
       {
         name: "image_url",
-        description: "Or paste a direct URL of an image/poster",
+        description: "Or paste image link(s) (supports space/comma separated URLs)",
         type: 3, // STRING
         required: false,
       },
