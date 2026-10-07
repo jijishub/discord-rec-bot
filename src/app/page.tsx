@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Category, RecFormData, BotPersona } from "@/types";
-import { DEFAULT_CATEGORIES, DEFAULT_BOT_PERSONA, SERVER_LEGEND_COLORS } from "@/lib/categories";
+import { DEFAULT_CATEGORIES, DEFAULT_BOT_PERSONA } from "@/lib/categories";
 import CategoryManagerModal from "@/components/CategoryManagerModal";
 import SettingsModal from "@/components/SettingsModal";
 import DiscordEmbedPreview from "@/components/DiscordEmbedPreview";
@@ -505,70 +505,6 @@ export default function Home() {
                     </button>
                   );
                 })}
-              </div>
-            </div>
-
-            {/* Embed Accent Color Customizer */}
-            <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-100 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <Palette className="w-3.5 h-3.5 text-pink-500" />
-                  Embed Border Color
-                </label>
-                {formData.customColor && (
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, customColor: undefined })}
-                    className="text-[11px] text-pink-500 hover:text-pink-700 underline font-medium"
-                  >
-                    Reset to {activeCategory.name} default
-                  </button>
-                )}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2.5">
-                {/* Active Color Swatch & Hex input */}
-                <div className="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-slate-200 shadow-xs">
-                  <input
-                    type="color"
-                    value={formData.customColor || activeCategory.color}
-                    onChange={(e) => setFormData({ ...formData, customColor: e.target.value })}
-                    className="w-7 h-7 rounded-lg cursor-pointer border-0 p-0 bg-transparent"
-                    title="Pick custom embed border color"
-                  />
-                  <input
-                    type="text"
-                    value={formData.customColor || activeCategory.color}
-                    onChange={(e) => setFormData({ ...formData, customColor: e.target.value })}
-                    className="w-20 text-xs font-mono font-semibold text-slate-700 bg-transparent focus:outline-none"
-                    placeholder="#c0c8ff"
-                  />
-                </div>
-
-                {/* Quick-pick Palette from Server Legend */}
-                <div className="flex flex-wrap items-center gap-1.5 flex-1">
-                  <span className="text-[11px] text-slate-400 mr-0.5">Legend:</span>
-                  {SERVER_LEGEND_COLORS.map((leg) => {
-                    const activeHex = (formData.customColor || activeCategory.color).toLowerCase();
-                    const isCurrent = activeHex === leg.hex.toLowerCase();
-                    return (
-                      <button
-                        key={leg.hex}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, customColor: leg.hex })}
-                        title={`${leg.label} (${leg.hex})`}
-                        className={`w-6 h-6 rounded-lg border flex items-center justify-center text-[10px] transition transform hover:scale-115 ${
-                          isCurrent
-                            ? "ring-2 ring-pink-400 ring-offset-1 scale-110 border-white shadow-xs"
-                            : "border-black/10 hover:border-black/30"
-                        }`}
-                        style={{ backgroundColor: leg.hex }}
-                      >
-                        {leg.emoji}
-                      </button>
-                    );
-                  })}
-                </div>
               </div>
             </div>
 
