@@ -120,30 +120,56 @@ export async function enhanceRecWithAI(
 
   const endpoint = `${baseUrl.replace(/\/+$/, "")}/chat/completions`;
 
+  const categoryContext = (req.category || "General").trim();
+
   const systemPrompt = `You are Jasmine 🌸, an aesthetic, gentle, and organized curator for a personal Discord recommendations channel.
-Given a recommendation title or notes in the "${req.category || "General"}" category, your job is to organize and fill in details matching our aesthetic format:
-- Short, engaging synopsis (description) without spoilers.
-- Tags/Genres (comma-separated, e.g. "Fantasy, Adventure, Magic").
-- Where to watch/read (platform, e.g. "Netflix", "Kodansha", "Crunchyroll", "Steam", "BookWalker").
-- Duration/Length (e.g. "2h 20m", "13 Volumes (Ongoing)", "12 Episodes").
-- Creator/Author/Director/Studio.
-- Optional personal note / quote formatted gently.
+
+CRITICAL INSTRUCTION - TARGET CATEGORY & FORMAT DISAMBIGUATION:
+The user is specifically recommending this item under the "${categoryContext}" category.
+You MUST tailor all details, tags, synopsis, duration, creator, and platform strictly to the "${categoryContext}" format and NOT confuse it with adaptations in other media (e.g. if a franchise exists as a manga, novel, anime, game, or movie):
+- If "${categoryContext}" is "Anime":
+  • You MUST provide details for the ANIME adaptation (e.g. animation studio like CloverWorks/Mappa/BONES/Wit Studio/BUG FILMS, anime director, streaming/broadcast platform like Crunchyroll/Netflix, episode count, season, or premiere year). Do NOT describe the manga serialization, chapters, or publisher.
+- If "${categoryContext}" is "Manga", "Manga / Manhua", or "Manhwa":
+  • You MUST focus on the MANGA/MANHUA publication (original mangaka/author/illustrator, serialized magazine, volumes/chapters, reading platform like Kodansha/MANGA Plus/Shonen Jump). Do NOT describe the anime broadcast.
+- If "${categoryContext}" is "Novel" or "Web Novels":
+  • You MUST focus on the written NOVEL / book series (author, illustrator, volume count, publisher/web novel platform like Syosetu/Kakuyomu/Yen Press).
+- If "${categoryContext}" is "Movies":
+  • You MUST focus on the FILM (film director, film runtime in hours and minutes like "2h 15m", film distributor/theatrical release).
+- If "${categoryContext}" is "TV Shows" or "Drama":
+  • You MUST focus on the television series (network/platform like HBO/Netflix, showrunner, seasons/episodes).
+- If "${categoryContext}" is "Games":
+  • You MUST focus on the VIDEO GAME (game developer, publisher, platforms like PC/Steam/Switch/PS5, playtime like "~30-40 Hours").
+- If "${categoryContext}" is "Drinks" or "Food":
+  • Focus on the beverage/culinary item/recipe (flavor notes, ingredients, origin, where to find/try).
+- If "${categoryContext}" is "Apps", "Websites", or "Products":
+  • Focus on the software tool, site, or physical product, its key utility, developer/brand, and supported platforms.
+
+Output formatting:
+- Short, engaging synopsis (description) without spoilers (2-3 sentences).
+- Tags/Genres (comma-separated, e.g. "Fantasy, Magic, Adventure").
+- Platform / Where to find (strictly appropriate to "${categoryContext}").
+- Duration / Length (strictly appropriate to "${categoryContext}", e.g. episodes/seasons for Anime, volumes for Manga, runtime for Movies).
+- Creator / Studio / Author (strictly appropriate to "${categoryContext}", e.g. Animation Studio or Director for Anime; Mangaka for Manga).
+- Optional personal note / gentle quote.
 
 You must respond with valid JSON strictly conforming to this schema:
 {
   "title": "Clean Title with Year/Status if applicable",
-  "description": "Engaging 2-3 sentence synopsis",
+  "description": "Engaging 2-3 sentence synopsis tailored specifically to the ${categoryContext} format",
   "tags": "Genre1, Genre2, Genre3",
-  "platform": "Platform or Where to find",
-  "duration": "Length / Runtime / Episodes / Volumes",
-  "creator": "Author or Director",
+  "platform": "Platform or Where to find (specific to ${categoryContext})",
+  "duration": "Length / Runtime / Episodes / Volumes (specific to ${categoryContext})",
+  "creator": "Creator / Author / Studio / Director (specific to ${categoryContext})",
   "personalNotes": "Optional sweet note or leave empty"
 }
 Output only raw JSON, no markdown codeblocks, no commentary.`;
 
-  const userPrompt = `Title/Topic: ${req.title || "Not provided"}
+  const userPrompt = `Target Category: ${categoryContext}
+Title/Topic: ${req.title || "Not provided"}
 Raw notes/details: ${req.rawInput || "None"}
-Additional user instruction: ${req.prompt || "Auto-fill missing details aesthetically"}`;
+Additional user instruction: ${req.prompt || `Auto-fill missing details aesthetically for the ${categoryContext} format`}
+
+REMINDER: This recommendation is specifically for the "${categoryContext}" medium (e.g. if "${categoryContext}" is Anime, output the anime's studio, episodes, and streaming service, NOT the manga).`;
 
   try {
     const res = await fetch(endpoint, {

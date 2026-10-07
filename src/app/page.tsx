@@ -601,10 +601,13 @@ export default function Home() {
               {/* Optional AI helper panel */}
               {showAiHelper && (
                 <div className="p-4 rounded-2xl bg-gradient-to-r from-pink-50/70 via-rose-50/30 to-sky-50/50 border border-pink-200/80 space-y-3">
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center justify-between text-xs flex-wrap gap-2">
                     <span className="font-semibold text-slate-700 flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-pink-500" />
                       Jasmine AI Assistant
+                      <span className="bg-pink-100 text-pink-800 text-[11px] px-2 py-0.5 rounded-full font-medium border border-pink-200">
+                        Targeting {activeCategory.emoji} {activeCategory.name}
+                      </span>
                     </span>
                     <span className="text-slate-400 text-[11px]">
                       Model: {aiSettings.model || serverConfig?.defaultModel || "gpt-5.6-luna"}
@@ -613,7 +616,7 @@ export default function Home() {
 
                   <input
                     type="text"
-                    placeholder="Optional instruction: e.g. 'Extract tags and runtime', 'Make it concise'"
+                    placeholder={`Optional instruction for ${activeCategory.name}: e.g. 'Extract tags and runtime', 'Make it concise'`}
                     value={aiCustomInstruction}
                     onChange={(e) => setAiCustomInstruction(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-pink-200 bg-white focus:outline-none focus:ring-2 focus:ring-pink-300"
