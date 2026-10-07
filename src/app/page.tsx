@@ -29,8 +29,13 @@ export default function Home() {
   const [aiSettings, setAiSettings] = useState({
     baseUrl: "",
     apiKey: "",
-    model: "gemini-1.5-pro",
+    model: "gpt-5.6-luna",
   });
+  const [serverConfig, setServerConfig] = useState<{
+    hasWebhook: boolean;
+    hasAi: boolean;
+    defaultModel: string;
+  } | null>(null);
 
   // Modal open states
   const [isCatModalOpen, setIsCatModalOpen] = useState(false);
@@ -65,8 +70,23 @@ export default function Home() {
     text: string;
   } | null>(null);
 
-  // Load saved configurations from localStorage on mount
+  // Load server config and saved configurations from localStorage on mount
   useEffect(() => {
+    // 1. Fetch server environment status
+    fetch("/api/config")
+      .then((res) => res.json())
+      .then((cfg) => {
+        setServerConfig(cfg);
+        if (cfg?.defaultModel) {
+          setAiSettings((prev) => ({
+            ...prev,
+            model: prev.model || cfg.defaultModel,
+          }));
+        }
+      })
+      .catch((e) => console.error("Could not fetch server config", e));
+
+    // 2. Load localStorage settings
     try {
       const savedCats = localStorage.getItem("jasmine_categories");
       if (savedCats) {
@@ -89,7 +109,12 @@ export default function Home() {
 
       const savedAi = localStorage.getItem("jasmine_ai_settings");
       if (savedAi) {
-        setAiSettings(JSON.parse(savedAi));
+        const parsedAi = JSON.parse(savedAi);
+        setAiSettings((prev) => ({
+          ...prev,
+          ...parsedAi,
+          model: parsedAi.model || prev.model,
+        }));
       }
     } catch (e) {
       console.error("Error loading localStorage settings", e);
@@ -197,9 +222,9 @@ export default function Home() {
           rawInput: `${formData.description}\n${formData.personalNotes}`,
           category: activeCategory.name,
           prompt: aiCustomInstruction,
-          model: aiSettings.model,
-          apiKey: aiSettings.apiKey,
-          apiBaseUrl: aiSettings.baseUrl,
+          model: aiSettings.model || serverConfig?.defaultModel || "gpt-5.6-luna",
+          apiKey: aiSettings.apiKey ? aiSettings.apiKey.trim() : undefined,
+          apiBaseUrl: aiSettings.baseUrl ? aiSettings.baseUrl.trim() : undefined,
         }),
       });
 
@@ -455,7 +480,7 @@ export default function Home() {
                       Jasmine AI Assistant
                     </span>
                     <span className="text-slate-400 text-[11px]">
-                      Model: {aiSettings.model || "gemini-1.5-pro"}
+                      Model: {aiSettings.model || serverConfig?.defaultModel || "gpt-5.6-luna"}
                     </span>
                   </div>
 
@@ -748,6 +773,7 @@ export default function Home() {
         onSaveWebhookUrl={handleSaveWebhookUrl}
         aiSettings={aiSettings}
         onSaveAiSettings={handleSaveAiSettings}
+        serverConfig={serverConfig || undefined}
       />
     </div>
   );
