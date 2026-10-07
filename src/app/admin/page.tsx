@@ -21,7 +21,6 @@ import {
   UploadCloud,
   LogOut,
   ShieldAlert,
-  KeyRound,
   ExternalLink,
 } from "lucide-react";
 
@@ -31,11 +30,7 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminUser, setAdminUser] = useState<{ email: string; name?: string; picture?: string } | null>(null);
   const [hasGoogleOauth, setHasGoogleOauth] = useState(true);
-
-  // Passcode login state
-  const [passcode, setPasscode] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Categories & Persona state
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
@@ -103,7 +98,7 @@ export default function AdminPage() {
       if (err === "unauthorized_email") {
         setLoginError("Access Denied: Your Google account is not authorized as an admin.");
       } else if (err === "missing_google_credentials") {
-        setLoginError("Google OAuth credentials are not configured in Vercel yet. You can sign in using your Admin Passcode below!");
+        setLoginError("Google OAuth credentials are not configured in Vercel yet.");
       } else if (err) {
         setLoginError(`Authentication error: ${err}`);
       }
@@ -146,35 +141,6 @@ export default function AdminPage() {
       })
       .catch((e) => console.error("Could not fetch persona", e));
   }, [isAuthenticated]);
-
-  // Handle Passcode Login
-  const handlePasscodeLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!passcode.trim()) return;
-
-    setIsLoggingIn(true);
-    setLoginError(null);
-
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: passcode }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Incorrect admin passcode.");
-      }
-
-      setIsAuthenticated(true);
-      setAdminUser(data.user);
-    } catch (err: unknown) {
-      setLoginError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
 
   // Handle Logout
   const handleLogout = async () => {
@@ -461,48 +427,6 @@ export default function AdminPage() {
               <span>Sign in with Google</span>
             </a>
           </div>
-
-          <div className="relative flex py-1 items-center">
-            <div className="grow border-t border-slate-100"></div>
-            <span className="shrink mx-3 text-[11px] text-slate-400 uppercase tracking-wider">
-              Or with Admin Passcode
-            </span>
-            <div className="grow border-t border-slate-100"></div>
-          </div>
-
-          {/* Passcode Login Form */}
-          <form onSubmit={handlePasscodeLogin} className="space-y-3">
-            <div>
-              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                Admin Passcode / Secret
-              </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  placeholder="Enter your ADMIN_SECRET..."
-                  value={passcode}
-                  onChange={(e) => setPasscode(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/40 focus:outline-none focus:ring-2 focus:ring-pink-300 pr-10"
-                />
-                <KeyRound className="w-4 h-4 text-slate-400 absolute right-3 top-3 pointer-events-none" />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoggingIn || !passcode.trim()}
-              className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-white bg-pink-500 hover:bg-pink-600 shadow-xs transition disabled:opacity-50 flex items-center justify-center gap-1.5"
-            >
-              {isLoggingIn ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>Verifying...</span>
-                </>
-              ) : (
-                <span>Unlock Admin Studio 🌸</span>
-              )}
-            </button>
-          </form>
 
           <div className="pt-2 text-center border-t border-slate-100">
             <Link

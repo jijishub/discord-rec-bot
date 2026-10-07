@@ -5,10 +5,9 @@ export const ADMIN_COOKIE_NAME = "jasmine_admin_session";
 
 function getSecretKey(): string {
   return (
-    process.env.ADMIN_SECRET ||
-    process.env.JWT_SECRET ||
+    process.env.GOOGLE_CLIENT_SECRET ||
     process.env.DISCORD_PUBLIC_KEY ||
-    "jasmine_fallback_secret_key_2026"
+    ""
   );
 }
 
@@ -95,10 +94,10 @@ export function isAuthorizedAdminEmail(email: string): boolean {
 }
 
 /**
- * Validates whether the incoming NextRequest is from an authenticated admin
+ * Validates whether the incoming NextRequest is from an authenticated admin via Google SSO session
  */
 export function verifyAdminRequest(req: NextRequest | Request): boolean {
-  // 1. Check HTTP-only cookie
+  // 1. Check HTTP-only cookie from Google SSO session
   if ("cookies" in req) {
     const cookieToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
     if (cookieToken && verifyAdminToken(cookieToken)) {
@@ -106,20 +105,12 @@ export function verifyAdminRequest(req: NextRequest | Request): boolean {
     }
   }
 
-  // 2. Check Authorization Header (Bearer <ADMIN_SECRET>)
+  // 2. Check Authorization Header (Bearer <signed_token>)
   const authHeader = req.headers.get("authorization");
   if (authHeader && authHeader.startsWith("Bearer ")) {
     const token = authHeader.slice(7).trim();
-    if (token) {
-      // Check if it's the raw admin secret
-      const adminSecret = process.env.ADMIN_SECRET || process.env.ADMIN_PASSWORD;
-      if (adminSecret && token === adminSecret) {
-        return true;
-      }
-      // Or if it's a signed admin token
-      if (verifyAdminToken(token)) {
-        return true;
-      }
+    if (token && verifyAdminToken(token)) {
+      return true;
     }
   }
 
