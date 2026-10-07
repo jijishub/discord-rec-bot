@@ -127,9 +127,9 @@ export function buildDiscordEmbeds(
     title = title.slice(0, 250) + "...";
   }
 
-  let footerText = (data.source
-    ? `Rec by ${data.source}`
-    : persona.footerText.replace("{source}", "Jizelle")).trim();
+  let footerText = (data.source?.trim()
+    ? `Rec by ${data.source.trim()}`
+    : persona.footerText.replace("{source}", "Anonymous")).trim();
   if (footerText.length > 2048) {
     footerText = footerText.slice(0, 2040) + "...";
   }

@@ -165,9 +165,9 @@ export default function DiscordEmbedPreview({ data, category, persona }: Props) 
                 <span>🌸</span>
               )}
               <span>
-                {data.source
-                  ? `Rec by ${data.source}`
-                  : persona.footerText.replace("{source}", "Jizelle")}
+                {data.source?.trim()
+                  ? `Rec by ${data.source.trim()}`
+                  : persona.footerText.replace("{source}", "Anonymous")}
               </span>
             </div>
           </div>

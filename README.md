@@ -1,7 +1,8 @@
 # ୨୧ Jasmine ┆ Discord Recommendation Studio & Gateway 🌸🧋
 
-> 🍡 **Aesthetic Japanese Café & Milktea Curator for Discord**  
-> 🎐 **Palette & Mood**: Baby pink (`#fce7f3`), Ayato pastel blue (`#c0c8ff`), Milktea boba (`#ffd2af`), Dango mochi (`#9cf8b5`), and Sakura blossoms 🌸
+> **An aesthetic community curation platform that streamlines sharing anime, novels, and media through beautifully formatted Discord embeds. Combines an intuitive web composer featuring AI-assisted metadata drafting with native in-chat Discord interactions. 🌸 NO COST DEPLOYMENT.**
+
+> 🍡 **Palette & Mood**: Baby pink (`#fce7f3`), Ayato pastel blue (`#c0c8ff`), Milktea boba (`#ffd2af`), Dango mochi (`#9cf8b5`), and Sakura blossoms 🌸
 
 ---
 
@@ -10,7 +11,7 @@
 **Jasmine 🌸** is a lightweight, aesthetic recommendation studio designed for Discord communities. It pairs a self-hosted web curation studio with Discord webhooks and slash commands, letting you curate, organize, and publish beautiful recommendations for Anime, Manga, Novels, Movies, Games, Cafés, and more.
 
 ### 🍵 The Two Halves of Jasmine:
-1. **The Web Studio (`rec.jizellecasia.site`)**:
+1. **The Web Studio (`rec.jizellecasia.site` or `your-app.vercel.app`)**:
    - A clean pastel desktop/mobile interface to create recommendations.
    - Live side-by-side Discord embed preview card.
    - Built-in 1:1 square canvas image cropper for custom flower icons and badges.
@@ -20,11 +21,16 @@
 2. **The In-Discord Bot (`Jasmine#6656`)**:
    - Direct Discord slash command (`/rec`) to post recommendations from inside Discord.
    - Right-click message context menu (`Apps -> Turn into Rec`) to instantly convert any message or photo in chat into an aesthetic recommendation embed in `#✻・recs`.
-   - Lightweight 24/7 gateway worker to display a permanent green **🟢 Online** status.
+   - Optional lightweight 24/7 gateway worker to display a permanent green **🟢 Online** status.
 
 ---
 
 ## 🌸 Key Features
+
+- 🤍 **100% Free & Zero-Cost Deployment ($0 / Month)**:
+  - **Zero Server Costs**: Engineered specifically for free-tier infrastructure on Vercel Hobby + Upstash Redis Free Tier.
+  - **Free Vercel Subdomain**: Deploy straight to `your-app.vercel.app` for $0 with full HTTPS. *(A custom domain is completely optional!)*
+  - **Skip the Always-Online Bot**: The 24/7 background worker is purely an aesthetic visual touch (green circle in member list). You can skip it entirely—all recommendation submissions, slash commands, context menus, and live previews function 100% serverless at $0 cost!
 
 - 🍡 **Dynamic Categories & 1:1 Icon Uploads**:
   - Add, edit, or customize any category (name, emoji, border accent color, thumbnail icon) directly in the web UI.
@@ -42,10 +48,6 @@
   - Connects to your reverse proxy (`https://your-ai-endpoint.example/v1`, supporting `gpt-5.6-luna`, `gemini-1.5-pro`, etc.).
   - Reads the active category to provide format-specific details (e.g. distinguishing an anime adaptation from its original manga publication).
   - Auto-expanding instruction box that smoothly adapts to multi-line input.
-
-- 🤍 **100% Serverless on Vercel**:
-  - Zero always-on server costs. Runs on-demand via Vercel Serverless Functions.
-  - Deployable under a custom domain via Cloudflare DNS.
 
 - 🎀 **In-Discord Slash Commands & Context Menu**:
   - Serverless Discord Interactions endpoint (`/api/interactions`) supporting `/rec` slash commands and right-click message context menu (`Apps -> Turn into Rec`).
@@ -144,28 +146,37 @@ If you'd like Jasmine to display the green "Online" dot and custom activity stat
 ```bash
 npm run bot
 ```
-*(You can also host `gateway-standalone/bot.js` alongside `your-ai-endpoint.example` on Google Cloud or any 24/7 background worker. See [JASMINE.md](./JASMINE.md) for step-by-step instructions).*
+*(You can also host `gateway-standalone/bot.js` alongside `your-ai-endpoint.example` on Google Cloud or any 24/7 background worker. See [gateway-standalone/README.md](./gateway-standalone/README.md) for step-by-step instructions).*
 
 > 💡 **Phase 2 Note (Always-On VM)**: In Phase 2, we will look into moving Jasmine's standalone gateway worker from bare-metal Google Cloud to a dedicated lightweight Cloud VM so that the green 🟢 Online indicator is always on. Note that this is purely an aesthetic quality-of-life (QOL) visual touch and is not strictly necessary—Jasmine functions completely and dispatches all recommendations without the green circle!
 
 ---
 
-## ✧ Deploying to Vercel & Custom Domain
+## ✧ 100% Free Deployment to Vercel ($0 Cost)
 
-1. **Deploy to Vercel**:
+> 💸 **Zero Hosting Costs ($0/month)**:
+> Jasmine was intentionally engineered to have **zero financial barrier to entry**:
+> - **Free Web App & API**: **$0.00** (Free on Vercel Hobby tier).
+> - **Free Subdomain**: **$0.00** (Deploy to `https://your-project.vercel.app` for free; a custom domain is completely optional).
+> - **Free Cloud Database**: **$0.00** (Upstash Redis free tier provides 10,000 commands/day; or use local browser cache).
+> - **Zero Server Cost for Bot**: **$0.00** (Discord slash commands run on-demand serverless via HTTP Interactions; you can skip running any 24/7 background worker entirely!).
+
+1. **Deploy to Vercel (Free)**:
    - Push this repository to GitHub.
    - In [Vercel](https://vercel.com), import the repository.
    - Add your environment variables from `.env.local`.
-   - Click **Deploy**.
+   - Click **Deploy** to instantly receive your live `https://your-project.vercel.app` curation studio!
 
-2. **Connect Custom Domain**:
-   - In Vercel Project Settings &rarr; **Domains**, add your domain (e.g. `rec.yourdomain.com`).
+2. **Connect Custom Domain (Optional)**:
+   - A custom domain is **completely optional**—you can run Jasmine on your free `*.vercel.app` domain forever.
+   - If you do own a custom domain, add it in Vercel Project Settings &rarr; **Domains** (e.g. `rec.yourdomain.com`).
    - In Cloudflare DNS, add a `CNAME` record pointing `rec` to `cname.vercel-dns.com` (DNS only / SSL Full).
 
 3. **Configure Discord Interactions Endpoint**:
    - In the [Discord Developer Portal](https://discord.com/developers/applications) &rarr; your application &rarr; **General Information**.
    - Set **Interactions Endpoint URL** to:
-     `https://your-domain.com/api/interactions`
+     `https://your-project.vercel.app/api/interactions`
+     *(or replace with your custom domain if you configured one)*
 
 ---
 

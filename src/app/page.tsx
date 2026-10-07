@@ -62,7 +62,10 @@ export default function Home() {
     process.env.NEXT_PUBLIC_RECIPIENT_PRONOUN ||
     (recipientName.toLowerCase() === "jizelle" ? "her" : "their");
 
-  // Rec Form State
+  // Admin SSO mode (false by default for public visitors)
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Rec Form State (source defaults to empty for public visitors)
   const [formData, setFormData] = useState<RecFormData>({
     categoryId: "movie",
     title: "",
@@ -72,7 +75,7 @@ export default function Home() {
     platform: "",
     duration: "",
     creator: "",
-    source: recipientName,
+    source: "",
     images: [],
   });
 
@@ -183,10 +186,23 @@ export default function Home() {
           model: parsedAi.model || prev.model,
         }));
       }
+
+      // Check for Admin SSO mode (?admin=true or saved in localStorage) vs Public visitor
+      const isUrlAdmin = window.location.search.includes("admin=true");
+      const isSavedAdmin = localStorage.getItem("jasmine_is_admin") === "true";
+      if (isUrlAdmin || isSavedAdmin) {
+        setIsAdmin(true);
+        setFormData((prev) => ({ ...prev, source: recipientName }));
+      } else {
+        const savedRecommender = localStorage.getItem("jasmine_recommender");
+        if (savedRecommender) {
+          setFormData((prev) => ({ ...prev, source: savedRecommender }));
+        }
+      }
     } catch (e) {
       console.error("Error loading localStorage settings", e);
     }
-  }, []);
+  }, [recipientName]);
 
   // Save changes to localStorage and Upstash Redis
   const handleSaveCategories = (updated: Category[]) => {
@@ -451,19 +467,7 @@ export default function Home() {
             <span className="text-base shrink-0">💌</span>
             <p className="leading-relaxed">
               Send your recommendations to{" "}
-              <strong className="font-semibold text-slate-800">{recipientName}</strong>{" "}
-              (
-              <a
-                href={repoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-pink-500 hover:text-pink-600 font-medium underline inline-flex items-center gap-0.5 transition"
-                title="View GitHub repository source"
-              >
-                source
-                <ExternalLink className="w-3 h-3 ml-0.5 inline-block" />
-              </a>
-              ), directly on {recipientPronoun} Discord rec channel.
+              <strong className="font-semibold text-slate-800">{recipientName}</strong>, directly on {recipientPronoun} Discord rec channel.
             </p>
           </div>
 
@@ -806,16 +810,66 @@ export default function Home() {
 
             {/* 7. Recommender / Source */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Recommender / Source (Footer)
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Recommender / Source (Footer)
+                </label>
+
+                {/* Admin Mode Toggle / Quick fill */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !isAdmin;
+                      setIsAdmin(next);
+                      if (next) {
+                        localStorage.setItem("jasmine_is_admin", "true");
+                        setFormData((prev) => ({ ...prev, source: recipientName }));
+                      } else {
+                        localStorage.removeItem("jasmine_is_admin");
+                        setFormData((prev) => ({ ...prev, source: "" }));
+                      }
+                    }}
+                    className={`text-[11px] px-2.5 py-0.5 rounded-lg border font-medium transition flex items-center gap-1 ${
+                      isAdmin || formData.source === recipientName
+                        ? "bg-pink-100/90 text-pink-700 border-pink-300 font-semibold shadow-xs"
+                        : "bg-slate-50 hover:bg-pink-50 text-slate-500 hover:text-pink-600 border-slate-200"
+                    }`}
+                    title="Toggle Admin mode / Post as Jizelle"
+                  >
+                    <span>👑</span>
+                    <span>{isAdmin || formData.source === recipientName ? `Admin (${recipientName})` : `Post as ${recipientName}`}</span>
+                  </button>
+
+                  {formData.source && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, source: "" }))}
+                      className="text-[11px] text-slate-400 hover:text-slate-600 px-1 py-0.5 transition"
+                      title="Clear source"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <input
                 type="text"
-                placeholder="e.g. social media, Rafa Ela, Jizelle"
+                placeholder="Your name or Discord handle (leave blank for Anonymous)"
                 value={formData.source}
-                onChange={(e) => setFormData({ ...formData, source: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData({ ...formData, source: val });
+                  if (!isAdmin && typeof window !== "undefined") {
+                    localStorage.setItem("jasmine_recommender", val);
+                  }
+                }}
                 className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/30 focus:outline-none focus:ring-2 focus:ring-pink-300"
               />
+              <p className="text-[11px] text-slate-400 mt-1">
+                Your name will appear as &ldquo;Rec by {formData.source?.trim() || "Anonymous"}&rdquo; in the Discord embed footer.
+              </p>
             </div>
 
             {/* Post to Discord Action */}
