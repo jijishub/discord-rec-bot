@@ -8,6 +8,7 @@ export interface Category {
 
 export interface RecFormData {
   categoryId: string;
+  customColor?: string; // Customizable embed color override
   title: string;
   description: string;
   personalNotes?: string;

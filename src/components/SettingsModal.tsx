@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BotPersona } from "@/types";
-import { X, Check, Save, Sparkles, CheckCircle2 } from "lucide-react";
+import { X, Check, Save, Sparkles, CheckCircle2, UploadCloud } from "lucide-react";
 
 interface Props {
   isOpen: boolean;
@@ -57,6 +57,38 @@ export default function SettingsModal({
   const [aiModel, setAiModel] = useState(aiSettings.model || serverConfig?.defaultModel || "gpt-5.6-luna");
 
   const [savedNotice, setSavedNotice] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Image is too large. Please select an avatar under 2MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const targetSize = 256;
+        canvas.width = targetSize;
+        canvas.height = targetSize;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          const minDim = Math.min(img.naturalWidth, img.naturalHeight);
+          const sx = (img.naturalWidth - minDim) / 2;
+          const sy = (img.naturalHeight - minDim) / 2;
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, targetSize, targetSize);
+          setAvatarUrl(canvas.toDataURL("image/png"));
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     if (!aiSettings.model && serverConfig?.defaultModel) {
@@ -253,8 +285,18 @@ export default function SettingsModal({
 
           {activeTab === "persona" && (
             <div className="space-y-4">
+              <div className="p-3.5 rounded-2xl bg-pink-50/70 border border-pink-200/80 text-xs text-pink-900">
+                <p className="font-semibold flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-pink-500" />
+                  Live Preview &amp; Sender Customization
+                </p>
+                <p className="text-[11px] text-pink-700 mt-1 leading-relaxed">
+                  Modifying your name and avatar here <strong>saves permanently</strong> to your browser (<code className="bg-pink-100 px-1 py-0.5 rounded">localStorage</code>) and immediately updates the live Discord preview card on the right!
+                </p>
+              </div>
+
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
+                <label className="block text-xs font-medium text-slate-700 mb-1">
                   Webhook Bot Display Name
                 </label>
                 <input
@@ -262,31 +304,60 @@ export default function SettingsModal({
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="e.g. Ayato ┆ ˚ ༘ ๋ or Jasmine 🌸"
-                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-pink-300 font-medium bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
-                  Avatar Profile Image URL
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Bot Avatar Profile Picture
                 </label>
-                <input
-                  type="url"
-                  value={avatarUrl}
-                  onChange={(e) => setAvatarUrl(e.target.value)}
-                  placeholder="https://... (Ayato / Jasmine avatar)"
-                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-pink-300"
-                />
-                {avatarUrl && (
-                  <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/40">
+                  <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-pink-200 bg-white shadow-xs shrink-0">
                     <img
-                      src={avatarUrl}
+                      src={avatarUrl || "https://i.imgur.com/K1b5T3v.png"}
                       alt="Avatar Preview"
-                      className="w-7 h-7 rounded-full object-cover border border-slate-200 shadow-sm"
+                      className="w-full h-full object-cover"
                     />
-                    <span>Avatar preview</span>
                   </div>
-                )}
+
+                  <div className="flex-1 space-y-1.5 w-full">
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => avatarInputRef.current?.click()}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-pink-100 hover:bg-pink-200 text-pink-700 transition"
+                      >
+                        <UploadCloud className="w-3.5 h-3.5" />
+                        <span>Upload Avatar (PNG/JPG)</span>
+                      </button>
+                      <input
+                        type="file"
+                        ref={avatarInputRef}
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                      />
+                      {avatarUrl && avatarUrl.startsWith("data:") && (
+                        <button
+                          type="button"
+                          onClick={() => setAvatarUrl("https://i.imgur.com/K1b5T3v.png")}
+                          className="px-2 py-1 text-xs text-rose-500 hover:text-rose-700"
+                        >
+                          Reset
+                        </button>
+                      )}
+                    </div>
+
+                    <input
+                      type="url"
+                      value={avatarUrl.startsWith("data:") ? "" : avatarUrl}
+                      onChange={(e) => setAvatarUrl(e.target.value)}
+                      placeholder="Or paste direct image URL (https://...)"
+                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-pink-300 bg-white"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div>

@@ -13,16 +13,18 @@ interface Props {
 }
 
 const PASTEL_PRESETS = [
-  "#7983d4", // Ayato Blue
-  "#f472b6", // Baby Pink
-  "#f59e0b", // Daisy Cream Amber
-  "#34d399", // Mint Green
-  "#c084fc", // Lavender
-  "#38bdf8", // Sky Cyan
-  "#fb923c", // Warm Peach
-  "#60a5fa", // Soft Azure
-  "#a3e635", // Sage Leaf
-  "#e879f9", // Blossom Fuchsia
+  "#c0c8ff", // Movies
+  "#fcc4c4", // Anime
+  "#ddb652", // Manga / Manhua
+  "#f8f5eb", // Novel
+  "#9cf8b5", // Web Novels
+  "#a6f5eb", // TV Shows
+  "#4c8b38", // Games
+  "#f0c7c7", // Apps
+  "#810808", // Websites
+  "#ffd2af", // Drinks
+  "#f5e3a9", // Food
+  "#fffafa", // Products
 ];
 
 export default function CategoryManagerModal({

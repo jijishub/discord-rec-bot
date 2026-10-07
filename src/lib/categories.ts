@@ -2,66 +2,110 @@ import { Category, BotPersona } from "@/types";
 
 export const DEFAULT_BOT_PERSONA: BotPersona = {
   username: "Ayato ┆ ˚ ༘ ๋",
-  avatarUrl: "https://i.imgur.com/K1b5T3v.png", // Ayato pastel avatar fallback
+  avatarUrl: "https://i.imgur.com/K1b5T3v.png", // Ayato pastel avatar
   footerText: "Rec by {source}",
   footerIconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f338.png", // 🌸
 };
 
+// Exact server legend palette from Jizelle's Space
+export const SERVER_LEGEND_COLORS = [
+  { hex: "#c0c8ff", label: "Movies", emoji: "💠" },
+  { hex: "#fcc4c4", label: "Anime", emoji: "🌸" },
+  { hex: "#ddb652", label: "Manga / Manhua", emoji: "🌼" },
+  { hex: "#f8f5eb", label: "Novel", emoji: "💮" },
+  { hex: "#9cf8b5", label: "Web Novels", emoji: "💐" },
+  { hex: "#a6f5eb", label: "TV Shows", emoji: "🌺" },
+  { hex: "#4c8b38", label: "Games", emoji: "🌹" },
+  { hex: "#f0c7c7", label: "Apps", emoji: "🌷" },
+  { hex: "#810808", label: "Websites", emoji: "🥀" },
+  { hex: "#ffd2af", label: "Drinks", emoji: "🧋" },
+  { hex: "#f5e3a9", label: "Food", emoji: "🥟" },
+  { hex: "#fffafa", label: "Products", emoji: "🤍" },
+];
+
 export const DEFAULT_CATEGORIES: Category[] = [
   {
-    id: "movie",
-    name: "Movie",
+    id: "movies",
+    name: "Movies",
     emoji: "💠",
-    color: "#7983d4",
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1faab.png", // lotus / forget-me-not blue
+    color: "#c0c8ff",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1faab.png",
+  },
+  {
+    id: "anime",
+    name: "Anime",
+    emoji: "🌸",
+    color: "#fcc4c4",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f338.png",
+  },
+  {
+    id: "manga",
+    name: "Manga / Manhua",
+    emoji: "🌼",
+    color: "#ddb652",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f33c.png",
   },
   {
     id: "novel",
     name: "Novel",
-    emoji: "🌼",
-    color: "#f59e0b",
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f33c.png", // daisy
+    emoji: "💮",
+    color: "#f8f5eb",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f4ae.png",
   },
   {
-    id: "anime",
-    name: "Anime / Manga",
-    emoji: "🌸",
-    color: "#f472b6",
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f338.png", // cherry blossom
+    id: "web-novels",
+    name: "Web Novels",
+    emoji: "💐",
+    color: "#9cf8b5",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f490.png",
   },
   {
-    id: "music",
-    name: "Music",
-    emoji: "🎵",
-    color: "#34d399",
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f3b5.png", // musical note
+    id: "tv-shows",
+    name: "TV Shows",
+    emoji: "🌺",
+    color: "#a6f5eb",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f33a.png",
   },
   {
-    id: "game",
-    name: "Game",
-    emoji: "🎮",
-    color: "#38bdf8",
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f3ae.png", // video game
+    id: "games",
+    name: "Games",
+    emoji: "🌹",
+    color: "#4c8b38",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f339.png",
   },
   {
-    id: "cafe",
-    name: "Café & Tea",
-    emoji: "🍵",
-    color: "#fb923c",
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f375.png", // teacup without handle
+    id: "apps",
+    name: "Apps",
+    emoji: "🌷",
+    color: "#f0c7c7",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f337.png",
   },
   {
-    id: "tech",
-    name: "Tech & Tools",
-    emoji: "💻",
-    color: "#60a5fa",
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f4bb.png", // laptop
+    id: "websites",
+    name: "Websites",
+    emoji: "🥀",
+    color: "#810808",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f940.png",
   },
   {
-    id: "lifestyle",
-    name: "Lifestyle",
-    emoji: "🌿",
-    color: "#a3e635",
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f33f.png", // herb
+    id: "drinks",
+    name: "Drinks",
+    emoji: "🧋",
+    color: "#ffd2af",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f9cb.png",
+  },
+  {
+    id: "food",
+    name: "Food",
+    emoji: "🥟",
+    color: "#f5e3a9",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f95f.png",
+  },
+  {
+    id: "products",
+    name: "Products",
+    emoji: "🤍",
+    color: "#fffafa",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f90d.png",
   },
 ];

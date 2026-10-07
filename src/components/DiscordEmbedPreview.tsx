@@ -11,7 +11,7 @@ interface Props {
 
 export default function DiscordEmbedPreview({ data, category, persona }: Props) {
   const images = (data.images || []).filter((img) => img && img.trim().length > 0);
-  const embedColor = category.color || "#7983d4";
+  const embedColor = data.customColor || category.color || "#7983d4";
 
   return (
     <div className="w-full bg-[#313338] text-[#dbdee1] p-4 sm:p-5 rounded-2xl shadow-xl font-sans text-[14px] leading-relaxed border border-slate-800 selection:bg-[#5865F2] selection:text-white">

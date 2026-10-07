@@ -35,7 +35,7 @@ export function buildDiscordEmbeds(
 ): { embeds: DiscordEmbed[]; fileAttachments: { blob: Blob; filename: string }[] } {
   const embeds: DiscordEmbed[] = [];
   const fileAttachments: { blob: Blob; filename: string }[] = [];
-  const embedColor = hexToDecimal(category.color);
+  const embedColor = hexToDecimal(data.customColor || category.color);
 
   // Check if category icon is an uploaded base64 image
   let resolvedIconUrl = category.iconUrl;
