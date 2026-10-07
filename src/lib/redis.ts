@@ -5,8 +5,27 @@ import { DEFAULT_CATEGORIES, DEFAULT_BOT_PERSONA } from "./categories";
 let redisInstance: Redis | null = null;
 
 export function getRedis(): Redis | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+  let url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+  let token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+
+  // Auto-detect any custom prefix injected by Vercel Storage
+  if (!url || !token) {
+    for (const [key, val] of Object.entries(process.env)) {
+      if (!val) continue;
+      if (!url && key.includes("REDIS") && key.endsWith("_REST_API_URL")) {
+        url = val;
+      }
+      if (!token && key.includes("REDIS") && key.endsWith("_REST_API_TOKEN")) {
+        token = val;
+      }
+      if (!url && key.endsWith("_REST_API_URL")) {
+        url = val;
+      }
+      if (!token && key.endsWith("_REST_API_TOKEN")) {
+        token = val;
+      }
+    }
+  }
 
   if (!url || !token) {
     return null;
