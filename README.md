@@ -146,6 +146,8 @@ npm run bot
 ```
 *(You can also host `gateway-standalone/bot.js` alongside `your-ai-endpoint.example` on Google Cloud or any 24/7 background worker. See [JASMINE.md](./JASMINE.md) for step-by-step instructions).*
 
+> 💡 **Phase 2 Note (Always-On VM)**: In Phase 2, we will look into moving Jasmine's standalone gateway worker from bare-metal Google Cloud to a dedicated lightweight Cloud VM so that the green 🟢 Online indicator is always on. Note that this is purely an aesthetic quality-of-life (QOL) visual touch and is not strictly necessary—Jasmine functions completely and dispatches all recommendations without the green circle!
+
 ---
 
 ## ✧ Deploying to Vercel & Custom Domain
@@ -164,6 +166,21 @@ npm run bot
    - In the [Discord Developer Portal](https://discord.com/developers/applications) &rarr; your application &rarr; **General Information**.
    - Set **Interactions Endpoint URL** to:
      `https://your-domain.com/api/interactions`
+
+---
+
+## 🍧 Project Roadmap
+
+- 🌸 **Phase 1 (Current & Production-Ready)**:
+  - Full-stack Web Studio deployed on Vercel (`rec.jizellecasia.site`).
+  - Serverless Discord slash commands (`/rec`) and message context menu (`Apps -> Turn into Rec`) via HTTP Interactions endpoint.
+  - Category-aware AI recommendation auto-fill via reverse proxy (`your-ai-endpoint.example`).
+  - Upstash Redis cloud persistence for custom 1:1 flower icons, categories, and bot persona.
+  - Multi-image mosaic gallery embeds (up to 9 images per recommendation).
+
+- 🍡 **Phase 2 (Planned QOL & Infrastructure)**:
+  - **Bare Metal to Cloud VM Migration**: Migrate the standalone gateway background worker (`gateway-standalone/`) from bare-metal Google Cloud to a dedicated cloud VM so Jasmine's green 🟢 Online presence status stays permanently active 24/7 in the server member list. *(Aesthetic QOL only—all webhook dispatches, web studio curation, and slash commands continue to work seamlessly without the green circle).*
+  - **Interactive Community Reactions**: Explore Discord button interactions for community bookmarking and reaction threads.
 
 ---
 
