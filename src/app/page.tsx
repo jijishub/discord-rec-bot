@@ -18,6 +18,8 @@ import {
   AlertCircle,
   Loader2,
   UploadCloud,
+  ExternalLink,
+  GitFork,
 } from "lucide-react";
 
 export default function Home() {
@@ -37,11 +39,28 @@ export default function Home() {
     hasRedis?: boolean;
     defaultModel: string;
     defaultPersona?: BotPersona;
+    recipientName?: string;
+    repoUrl?: string;
+    recipientPronoun?: string;
   } | null>(null);
 
   // Modal open states
   const [isCatModalOpen, setIsCatModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
+  // Recipient info & Repo source link (Configurable for forks)
+  const recipientName =
+    serverConfig?.recipientName ||
+    process.env.NEXT_PUBLIC_RECIPIENT_NAME ||
+    "Jizelle";
+  const repoUrl =
+    serverConfig?.repoUrl ||
+    process.env.NEXT_PUBLIC_REPO_URL ||
+    "https://github.com/jijishub/discord-rec-bot";
+  const recipientPronoun =
+    serverConfig?.recipientPronoun ||
+    process.env.NEXT_PUBLIC_RECIPIENT_PRONOUN ||
+    (recipientName.toLowerCase() === "jizelle" ? "her" : "their");
 
   // Rec Form State
   const [formData, setFormData] = useState<RecFormData>({
@@ -53,7 +72,7 @@ export default function Home() {
     platform: "",
     duration: "",
     creator: "",
-    source: "Jizelle",
+    source: recipientName,
     images: [],
   });
 
@@ -399,7 +418,7 @@ export default function Home() {
               </span>
             </div>
             <p className="text-[11px] text-slate-400">
-              ◜― ✿ Jizelle&apos;s Space ✿
+              ◜― ✿ {recipientName}&apos;s Space ✿
             </p>
           </div>
         </div>
@@ -425,9 +444,45 @@ export default function Home() {
       </header>
 
       {/* Main Workspace Layout */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Recommendation Composer Form */}
-        <div className="lg:col-span-7 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        {/* Top Header / Recommendation Notice Banner */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4.5 sm:px-5 py-3.5 rounded-2xl bg-white/80 border border-pink-100/80 shadow-xs backdrop-blur-xs text-xs sm:text-sm text-slate-600">
+          <div className="flex items-center gap-2.5">
+            <span className="text-base shrink-0">💌</span>
+            <p className="leading-relaxed">
+              Send your recommendations to{" "}
+              <strong className="font-semibold text-slate-800">{recipientName}</strong>{" "}
+              (
+              <a
+                href={repoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-pink-500 hover:text-pink-600 font-medium underline inline-flex items-center gap-0.5 transition"
+                title="View GitHub repository source"
+              >
+                source
+                <ExternalLink className="w-3 h-3 ml-0.5 inline-block" />
+              </a>
+              ), directly on {recipientPronoun} Discord rec channel.
+            </p>
+          </div>
+
+          <a
+            href={repoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-pink-50/80 hover:bg-pink-100/80 border border-pink-200/60 text-pink-700 transition shrink-0"
+            title="Fork this repository on GitHub"
+          >
+            <GitFork className="w-3.5 h-3.5" />
+            <span>Fork on GitHub</span>
+          </a>
+        </div>
+
+        {/* 2-Column Workspace Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left Column: Recommendation Composer Form */}
+          <div className="lg:col-span-7 space-y-6">
           {/* Status Message */}
           {statusMessage && (
             <div
@@ -823,7 +878,8 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
+    </main>
 
       {/* Modals */}
       <CategoryManagerModal
