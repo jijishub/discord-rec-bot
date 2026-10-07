@@ -39,6 +39,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ type: InteractionResponseType.PONG });
   }
 
+  // Handle Slash Command Autocomplete (Live dynamic choices from studio)
+  if (interaction.type === InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE) {
+    const options = interaction.data?.options || [];
+    const focusedOption = options.find((opt: { focused?: boolean }) => opt.focused);
+    const query = ((focusedOption?.value as string) || "").toLowerCase().trim();
+
+    const { categories } = await getStoredCategories();
+    const activeCategories =
+      categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES;
+
+    const choices = activeCategories
+      .filter((c) =>
+        !query ||
+        c.name.toLowerCase().includes(query) ||
+        (c.emoji && c.emoji.includes(query)) ||
+        c.id.toLowerCase().includes(query)
+      )
+      .slice(0, 25)
+      .map((c) => ({
+        name: `${c.emoji || "🌸"} ${c.name}`.slice(0, 100),
+        value: c.id,
+      }));
+
+    return NextResponse.json({
+      type: InteractionResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
+      data: {
+        choices,
+      },
+    });
+  }
+
   // Handle Application Commands (Slash commands or Message Context Menus)
   if (interaction.type === InteractionType.APPLICATION_COMMAND) {
     const { name } = interaction.data;
@@ -50,17 +81,39 @@ export async function POST(req: NextRequest) {
       const categoryOption = options.find((opt: { name: string }) => opt.name === "category");
       const notesOption = options.find((opt: { name: string }) => opt.name === "notes");
       const imageOption = options.find((opt: { name: string }) => opt.name === "image_url");
+      const attachmentOption = options.find((opt: { name: string }) => opt.name === "image");
 
       const title = titleOption?.value as string;
-      const categoryId = (categoryOption?.value as string) || "movie";
+      const categoryId = ((categoryOption?.value as string) || "movies").toLowerCase();
       const notes = notesOption?.value as string;
       const imageUrl = imageOption?.value as string;
 
+      // Extract uploaded image attachment if present (Discord Type 11 ATTACHMENT)
+      let uploadedAttachmentUrl: string | undefined;
+      if (attachmentOption && interaction.data.resolved?.attachments) {
+        const attachment = interaction.data.resolved.attachments[attachmentOption.value];
+        if (attachment?.url) {
+          uploadedAttachmentUrl = attachment.url;
+        }
+      }
+
+      const finalImages: string[] = [];
+      if (uploadedAttachmentUrl) finalImages.push(uploadedAttachmentUrl);
+      if (imageUrl && !finalImages.includes(imageUrl)) finalImages.push(imageUrl);
+
       const { categories } = await getStoredCategories();
       const { persona } = await getStoredPersona();
+      const activeCategories =
+        categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES;
 
       const category =
-        categories.find((c) => c.id === categoryId) || categories[0] || DEFAULT_CATEGORIES[0];
+        activeCategories.find(
+          (c) =>
+            c.id.toLowerCase() === categoryId ||
+            c.name.toLowerCase() === categoryId
+        ) ||
+        activeCategories[0] ||
+        DEFAULT_CATEGORIES[0];
 
       // Build and send to webhook
       const recData = {
@@ -68,7 +121,7 @@ export async function POST(req: NextRequest) {
         title: title || "New Recommendation",
         description: "",
         personalNotes: notes,
-        images: imageUrl ? [imageUrl] : [],
+        images: finalImages,
         source: interaction.member?.user?.username || interaction.user?.username || "Jasmine",
       };
 

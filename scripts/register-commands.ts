@@ -26,19 +26,16 @@ const commands = [
       },
       {
         name: "category",
-        description: "The recommendation category",
+        description: "The recommendation category (live from your studio)",
         type: 3, // STRING
         required: false,
-        choices: [
-          { name: "💠 Movie", value: "movie" },
-          { name: "🌼 Novel / Book", value: "novel" },
-          { name: "🌸 Anime / Manga", value: "anime" },
-          { name: "🎵 Music", value: "music" },
-          { name: "🎮 Game", value: "game" },
-          { name: "🍵 Café & Tea", value: "cafe" },
-          { name: "💻 Tech & Tools", value: "tech" },
-          { name: "🌿 Lifestyle", value: "lifestyle" },
-        ],
+        autocomplete: true,
+      },
+      {
+        name: "image",
+        description: "Upload an image/poster directly from your device",
+        type: 11, // ATTACHMENT (File upload)
+        required: false,
       },
       {
         name: "notes",
@@ -48,7 +45,7 @@ const commands = [
       },
       {
         name: "image_url",
-        description: "Direct URL of an image/poster to include",
+        description: "Or paste a direct URL of an image/poster",
         type: 3, // STRING
         required: false,
       },
