@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { Category, RecFormData, BotPersona } from "@/types";
 import { DEFAULT_CATEGORIES, DEFAULT_BOT_PERSONA } from "@/lib/categories";
-import CategoryManagerModal from "@/components/CategoryManagerModal";
-import SettingsModal from "@/components/SettingsModal";
 import DiscordEmbedPreview from "@/components/DiscordEmbedPreview";
 import {
   Sparkles,
@@ -12,14 +11,13 @@ import {
   Plus,
   Trash2,
   Image as ImageIcon,
-  Settings,
-  Palette,
   CheckCircle2,
   AlertCircle,
   Loader2,
   UploadCloud,
   ExternalLink,
   GitFork,
+  Lock,
 } from "lucide-react";
 
 export default function Home() {
@@ -44,10 +42,6 @@ export default function Home() {
     recipientPronoun?: string;
   } | null>(null);
 
-  // Modal open states
-  const [isCatModalOpen, setIsCatModalOpen] = useState(false);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-
   // Recipient info & Repo source link (Configurable for forks)
   const recipientName =
     serverConfig?.recipientName ||
@@ -61,9 +55,6 @@ export default function Home() {
     serverConfig?.recipientPronoun ||
     process.env.NEXT_PUBLIC_RECIPIENT_PRONOUN ||
     (recipientName.toLowerCase() === "jizelle" ? "her" : "their");
-
-  // Admin SSO mode (false by default for public visitors)
-  const [isAdmin, setIsAdmin] = useState(false);
 
   // Rec Form State (source defaults to empty for public visitors)
   const [formData, setFormData] = useState<RecFormData>({
@@ -187,67 +178,15 @@ export default function Home() {
         }));
       }
 
-      // Check for Admin SSO mode (?admin=true or saved in localStorage) vs Public visitor
-      const isUrlAdmin = window.location.search.includes("admin=true");
-      const isSavedAdmin = localStorage.getItem("jasmine_is_admin") === "true";
-      if (isUrlAdmin || isSavedAdmin) {
-        setIsAdmin(true);
-        setFormData((prev) => ({ ...prev, source: recipientName }));
-      } else {
-        const savedRecommender = localStorage.getItem("jasmine_recommender");
-        if (savedRecommender) {
-          setFormData((prev) => ({ ...prev, source: savedRecommender }));
-        }
+      // Load saved visitor recommender handle
+      const savedRecommender = localStorage.getItem("jasmine_recommender");
+      if (savedRecommender) {
+        setFormData((prev) => ({ ...prev, source: savedRecommender }));
       }
     } catch (e) {
       console.error("Error loading localStorage settings", e);
     }
-  }, [recipientName]);
-
-  // Save changes to localStorage and Upstash Redis
-  const handleSaveCategories = (updated: Category[]) => {
-    setCategories(updated);
-    localStorage.setItem("jasmine_categories", JSON.stringify(updated));
-    if (!updated.some((c) => c.id === selectedCatId)) {
-      setSelectedCatId(updated[0]?.id || "");
-    }
-    fetch("/api/categories", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ categories: updated }),
-    }).catch((e) => console.error("Could not sync categories to cloud", e));
-  };
-
-  const handleResetCategories = () => {
-    setCategories(DEFAULT_CATEGORIES);
-    setSelectedCatId(DEFAULT_CATEGORIES[0].id);
-    localStorage.setItem("jasmine_categories", JSON.stringify(DEFAULT_CATEGORIES));
-    fetch("/api/categories", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ categories: DEFAULT_CATEGORIES }),
-    }).catch((e) => console.error("Could not reset categories in cloud", e));
-  };
-
-  const handleSavePersona = (updated: BotPersona) => {
-    setPersona(updated);
-    localStorage.setItem("jasmine_persona", JSON.stringify(updated));
-    fetch("/api/persona", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ persona: updated }),
-    }).catch((e) => console.error("Could not sync persona to cloud", e));
-  };
-
-  const handleSaveWebhookUrl = (url: string) => {
-    setWebhookUrl(url);
-    localStorage.setItem("jasmine_webhook_url", url);
-  };
-
-  const handleSaveAiSettings = (settings: { baseUrl: string; apiKey: string; model: string }) => {
-    setAiSettings(settings);
-    localStorage.setItem("jasmine_ai_settings", JSON.stringify(settings));
-  };
+  }, []);
 
   // Current active category
   const activeCategory =
@@ -441,21 +380,14 @@ export default function Home() {
 
         {/* Header Action Buttons */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={() => setIsCatModalOpen(true)}
+          <Link
+            href="/admin"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200/60 shadow-xs transition"
+            title="Admin Login"
           >
-            <Palette className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Categories & Icons</span>
-          </button>
-
-          <button
-            onClick={() => setIsSettingsModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200/60 shadow-xs transition"
-          >
-            <Settings className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Settings</span>
-          </button>
+            <Lock className="w-3.5 h-3.5" />
+            <span>Admin Portal</span>
+          </Link>
         </div>
       </header>
 
@@ -514,17 +446,10 @@ export default function Home() {
           <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-pink-100/80 space-y-6">
             {/* 1. Category Selection */}
             <div>
-              <div className="flex justify-between items-center mb-2.5">
+              <div className="mb-2.5">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Category
                 </label>
-                <button
-                  type="button"
-                  onClick={() => setIsCatModalOpen(true)}
-                  className="text-xs text-pink-500 hover:text-pink-600 flex items-center gap-1 font-medium"
-                >
-                  <Plus className="w-3 h-3" /> Manage / Add
-                </button>
               </div>
 
               {/* Dynamic Category Pills */}
@@ -815,43 +740,16 @@ export default function Home() {
                   Recommender / Source (Footer)
                 </label>
 
-                {/* Admin Mode Toggle / Quick fill */}
-                <div className="flex items-center gap-1.5">
+                {formData.source && (
                   <button
                     type="button"
-                    onClick={() => {
-                      const next = !isAdmin;
-                      setIsAdmin(next);
-                      if (next) {
-                        localStorage.setItem("jasmine_is_admin", "true");
-                        setFormData((prev) => ({ ...prev, source: recipientName }));
-                      } else {
-                        localStorage.removeItem("jasmine_is_admin");
-                        setFormData((prev) => ({ ...prev, source: "" }));
-                      }
-                    }}
-                    className={`text-[11px] px-2.5 py-0.5 rounded-lg border font-medium transition flex items-center gap-1 ${
-                      isAdmin || formData.source === recipientName
-                        ? "bg-pink-100/90 text-pink-700 border-pink-300 font-semibold shadow-xs"
-                        : "bg-slate-50 hover:bg-pink-50 text-slate-500 hover:text-pink-600 border-slate-200"
-                    }`}
-                    title="Toggle Admin mode / Post as Jizelle"
+                    onClick={() => setFormData((prev) => ({ ...prev, source: "" }))}
+                    className="text-[11px] text-slate-400 hover:text-slate-600 px-1 py-0.5 transition"
+                    title="Clear source"
                   >
-                    <span>👑</span>
-                    <span>{isAdmin || formData.source === recipientName ? `Admin (${recipientName})` : `Post as ${recipientName}`}</span>
+                    Clear
                   </button>
-
-                  {formData.source && (
-                    <button
-                      type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, source: "" }))}
-                      className="text-[11px] text-slate-400 hover:text-slate-600 px-1 py-0.5 transition"
-                      title="Clear source"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
+                )}
               </div>
 
               <input
@@ -861,7 +759,7 @@ export default function Home() {
                 onChange={(e) => {
                   const val = e.target.value;
                   setFormData({ ...formData, source: val });
-                  if (!isAdmin && typeof window !== "undefined") {
+                  if (typeof window !== "undefined") {
                     localStorage.setItem("jasmine_recommender", val);
                   }
                 }}
@@ -924,38 +822,16 @@ export default function Home() {
             <div className="p-4 rounded-2xl bg-white border border-pink-100 shadow-xs text-xs text-slate-500 space-y-1">
               <p className="font-semibold text-slate-700 flex items-center gap-1">
                 <span>💡 Tip:</span>
-                <span>Custom Category Icons</span>
+                <span>Live Discord Webhook</span>
               </p>
               <p className="leading-relaxed">
-                Click <strong>Categories &amp; Icons 🎨</strong> in the top header to change any category’s name, accent color, or top-right flower icon anytime.
+                Recommendations submitted here are posted directly to <strong>#❋・recs</strong>! Check out the live channel in Discord to see the published embed card.
               </p>
             </div>
           </div>
         </div>
       </div>
     </main>
-
-      {/* Modals */}
-      <CategoryManagerModal
-        isOpen={isCatModalOpen}
-        onClose={() => setIsCatModalOpen(false)}
-        categories={categories}
-        onSaveCategories={handleSaveCategories}
-        onResetCategories={handleResetCategories}
-        isCloudConnected={!!serverConfig?.hasRedis}
-      />
-
-      <SettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
-        persona={persona}
-        onSavePersona={handleSavePersona}
-        webhookUrl={webhookUrl}
-        onSaveWebhookUrl={handleSaveWebhookUrl}
-        aiSettings={aiSettings}
-        onSaveAiSettings={handleSaveAiSettings}
-        serverConfig={serverConfig || undefined}
-      />
-    </div>
-  );
+  </div>
+);
 }

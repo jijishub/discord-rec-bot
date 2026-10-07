@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStoredCategories, saveStoredCategories } from "@/lib/redis";
+import { verifyAdminRequest } from "@/lib/auth";
 import { Category } from "@/types";
 
 export async function GET() {
@@ -8,6 +9,14 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  // Prevent unauthorized public users from overwriting or resetting categories
+  if (!verifyAdminRequest(req)) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized: Admin authentication required to modify categories." },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await req.json();
     const categories: Category[] = body.categories;
