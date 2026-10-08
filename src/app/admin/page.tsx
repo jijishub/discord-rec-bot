@@ -481,6 +481,17 @@ export default function AdminPage() {
             <span className="hidden sm:inline">Settings</span>
           </button>
 
+          <a
+            href="https://discord.com/oauth2/authorize?client_id=1557445475685113886"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200/60 shadow-xs transition"
+            title="Add Jasmine to your Discord server or user profile"
+          >
+            <span>+ Bot Invite 🌸</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+
           <Link
             href="/"
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition"

@@ -380,6 +380,16 @@ export default function Home() {
 
         {/* Header Action Buttons */}
         <div className="flex items-center gap-2 sm:gap-3">
+          <a
+            href="https://discord.com/oauth2/authorize?client_id=1557445475685113886"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-linear-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white shadow-2xs hover:shadow-xs transition transform hover:-translate-y-0.5"
+            title="Add Jasmine to your Discord server or user profile"
+          >
+            <span>+ Add to Discord 🌸</span>
+            <ExternalLink className="w-3.5 h-3.5 opacity-90" />
+          </a>
           <Link
             href="/admin"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200/60 shadow-xs transition"
@@ -403,16 +413,28 @@ export default function Home() {
             </p>
           </div>
 
-          <a
-            href={repoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-pink-50/80 hover:bg-pink-100/80 border border-pink-200/60 text-pink-700 transition shrink-0"
-            title="Fork this repository on GitHub"
-          >
-            <GitFork className="w-3.5 h-3.5" />
-            <span>Fork on GitHub</span>
-          </a>
+          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+            <a
+              href="https://discord.com/oauth2/authorize?client_id=1557445475685113886"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-pink-50 hover:bg-pink-100 border border-pink-200/80 text-pink-700 transition"
+              title="Add Jasmine Bot to your server or account"
+            >
+              <span>+ Add to Discord 🌸</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+            <a
+              href={repoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-600 transition"
+              title="Fork this repository on GitHub"
+            >
+              <GitFork className="w-3.5 h-3.5" />
+              <span>Fork</span>
+            </a>
+          </div>
         </div>
 
         {/* 2-Column Workspace Grid */}
@@ -827,6 +849,31 @@ export default function Home() {
               <p className="leading-relaxed">
                 Recommendations submitted here are posted directly to <strong>#❋・recs</strong>! Check out the live channel in Discord to see the published embed card.
               </p>
+            </div>
+
+            {/* Universal Bot Install Card */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-pink-50/80 via-white to-sky-50/60 border border-pink-100/90 shadow-xs text-xs space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <span>🌸</span>
+                  <span>Add Jasmine to Your Discord</span>
+                </span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-pink-600 bg-pink-100/70 px-2 py-0.5 rounded-full">
+                  Slash /rec
+                </span>
+              </div>
+              <p className="text-slate-600 leading-relaxed text-[11px]">
+                Install Jasmine to your Discord server or user profile to share aesthetic recommendations anywhere with <code className="bg-pink-100/60 text-pink-700 px-1 py-0.5 rounded">/rec</code>!
+              </p>
+              <a
+                href="https://discord.com/oauth2/authorize?client_id=1557445475685113886"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold bg-pink-500 hover:bg-pink-600 text-white shadow-2xs hover:shadow-xs transition"
+              >
+                <span>Add Jasmine (Universal Invite Link)</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
             </div>
           </div>
         </div>
