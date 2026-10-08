@@ -380,16 +380,6 @@ export default function Home() {
 
         {/* Header Action Buttons */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <a
-            href="https://discord.com/oauth2/authorize?client_id=1557445475685113886"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-linear-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white shadow-2xs hover:shadow-xs transition transform hover:-translate-y-0.5"
-            title="Add Jasmine to your Discord server or user profile"
-          >
-            <span>+ Add to Discord 🌸</span>
-            <ExternalLink className="w-3.5 h-3.5 opacity-90" />
-          </a>
           <Link
             href="/admin"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200/60 shadow-xs transition"

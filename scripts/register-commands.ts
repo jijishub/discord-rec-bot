@@ -22,16 +22,52 @@ const commands = [
     options: [
       {
         name: "title",
-        description: "The title of the recommendation",
+        description: "Title of the recommendation",
         type: 3, // STRING
         required: true,
       },
       {
+        name: "description",
+        description: "Brief synopsis or overview of the work",
+        type: 3, // STRING
+        required: false,
+      },
+      {
         name: "category",
-        description: "The recommendation category (live from your studio)",
+        description: "Recommendation category (live from your studio)",
         type: 3, // STRING
         required: false,
         autocomplete: true,
+      },
+      {
+        name: "notes",
+        description: "Personal thoughts, review, or quotes (rendered as quote)",
+        type: 3, // STRING
+        required: false,
+      },
+      {
+        name: "tags",
+        description: "Tags, genres, or keywords",
+        type: 3, // STRING
+        required: false,
+      },
+      {
+        name: "platform",
+        description: "Where to watch, read, or play (e.g. Netflix, Steam)",
+        type: 3, // STRING
+        required: false,
+      },
+      {
+        name: "duration",
+        description: "Duration, episodes, or chapters (e.g. 12 eps, 120 mins)",
+        type: 3, // STRING
+        required: false,
+      },
+      {
+        name: "creator",
+        description: "Author, director, studio, or creator",
+        type: 3, // STRING
+        required: false,
       },
       {
         name: "image",
@@ -55,12 +91,6 @@ const commands = [
         name: "image_4",
         description: "4th image for mosaic gallery (Upload)",
         type: 11, // ATTACHMENT
-        required: false,
-      },
-      {
-        name: "notes",
-        description: "Personal thoughts, review, or quotes",
-        type: 3, // STRING
         required: false,
       },
       {

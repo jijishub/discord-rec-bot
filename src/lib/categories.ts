@@ -21,6 +21,7 @@ export const SERVER_LEGEND_COLORS = [
   { hex: "#ffd2af", label: "Drinks", emoji: "🧋" },
   { hex: "#f5e3a9", label: "Food", emoji: "🥟" },
   { hex: "#fffafa", label: "Products", emoji: "🤍" },
+  { hex: "#bbf7d0", label: "Others", emoji: "🍃" },
 ];
 
 export const DEFAULT_CATEGORIES: Category[] = [
@@ -107,5 +108,12 @@ export const DEFAULT_CATEGORIES: Category[] = [
     emoji: "🤍",
     color: "#fffafa",
     iconUrl: "/product.png",
+  },
+  {
+    id: "others",
+    name: "Others",
+    emoji: "🍃",
+    color: "#bbf7d0",
+    iconUrl: "/others.png",
   },
 ];

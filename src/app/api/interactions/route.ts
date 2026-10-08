@@ -99,14 +99,24 @@ export async function POST(req: NextRequest) {
       if (name === "rec") {
         const options = interaction.data.options || [];
         const titleOption = options.find((opt: { name: string }) => opt.name === "title");
+        const descriptionOption = options.find((opt: { name: string }) => opt.name === "description");
         const categoryOption = options.find((opt: { name: string }) => opt.name === "category");
         const notesOption = options.find((opt: { name: string }) => opt.name === "notes");
+        const tagsOption = options.find((opt: { name: string }) => opt.name === "tags");
+        const platformOption = options.find((opt: { name: string }) => opt.name === "platform");
+        const durationOption = options.find((opt: { name: string }) => opt.name === "duration");
+        const creatorOption = options.find((opt: { name: string }) => opt.name === "creator");
         const imageOption = options.find((opt: { name: string }) => opt.name === "image_url");
-        const attachmentOption = options.find((opt: { name: string }) => opt.name === "image");
 
         const title = titleOption?.value as string;
-        const categoryId = ((categoryOption?.value as string) || "movies").toLowerCase();
+        const description = descriptionOption?.value as string;
+        const rawCategoryInput = (categoryOption?.value as string || "").trim();
+        const categoryId = rawCategoryInput.toLowerCase();
         const notes = notesOption?.value as string;
+        const tags = tagsOption?.value as string;
+        const platform = platformOption?.value as string;
+        const duration = durationOption?.value as string;
+        const creator = creatorOption?.value as string;
         const imageUrl = imageOption?.value as string;
 
         const finalImages: string[] = [];
@@ -131,14 +141,31 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        const category =
-          activeCategories.find(
-            (c) =>
-              c.id.toLowerCase() === categoryId ||
-              c.name.toLowerCase() === categoryId
-          ) ||
-          activeCategories[0] ||
-          DEFAULT_CATEGORIES[0];
+        // Match category from live active categories (supports name, id, 'others', or custom fallback)
+        let category = activeCategories.find(
+          (c) =>
+            c.id.toLowerCase() === categoryId ||
+            c.name.toLowerCase() === categoryId
+        );
+
+        if (!category) {
+          if (rawCategoryInput) {
+            const othersCat = activeCategories.find((c) => c.id === "others");
+            category = {
+              id: "custom",
+              name: rawCategoryInput,
+              emoji: othersCat?.emoji || "🍃",
+              color: othersCat?.color || "#bbf7d0",
+              iconUrl: othersCat?.iconUrl || "/others.png",
+            };
+          } else {
+            category =
+              activeCategories.find((c) => c.id === "movies") ||
+              activeCategories.find((c) => c.id === "others") ||
+              activeCategories[0] ||
+              DEFAULT_CATEGORIES[0];
+          }
+        }
 
         const authorName =
           interaction.member?.nick ||
@@ -151,8 +178,12 @@ export async function POST(req: NextRequest) {
         const recData = {
           categoryId: category.id,
           title: title || "New Recommendation",
-          description: "",
+          description: description || "",
           personalNotes: notes,
+          tags: tags || "",
+          platform: platform || "",
+          duration: duration || "",
+          creator: creator || "",
           images: finalImages,
           source: authorName,
         };
