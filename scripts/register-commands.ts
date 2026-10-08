@@ -27,17 +27,17 @@ const commands = [
         required: true,
       },
       {
+        name: "category",
+        description: "Recommendation category (live from your studio)",
+        type: 3, // STRING
+        required: true,
+        autocomplete: true,
+      },
+      {
         name: "description",
         description: "Brief synopsis or overview of the work",
         type: 3, // STRING
         required: false,
-      },
-      {
-        name: "category",
-        description: "Recommendation category (live from your studio)",
-        type: 3, // STRING
-        required: false,
-        autocomplete: true,
       },
       {
         name: "notes",

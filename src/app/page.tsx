@@ -782,17 +782,75 @@ export default function Home() {
               </p>
             </div>
 
+            {/* Custom Destination Webhook (Optional for Members from other servers) */}
+            <div className="pt-2">
+              <details className="group rounded-2xl border border-pink-100/90 bg-pink-50/25 p-3.5 transition open:bg-pink-50/50">
+                <summary className="cursor-pointer text-xs font-semibold text-slate-700 flex items-center justify-between select-none">
+                  <span className="flex items-center gap-1.5">
+                    <span>⚙️</span>
+                    <span>Sending to another Discord server? <span className="font-normal text-slate-400">(Optional)</span></span>
+                  </span>
+                  <span className="text-[10px] text-pink-500 group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[11px] font-semibold text-slate-700">
+                      Destination Channel Webhook URL
+                    </label>
+                    {webhookUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWebhookUrl("");
+                          if (typeof window !== "undefined") {
+                            localStorage.removeItem("jasmine_webhook_url");
+                          }
+                        }}
+                        className="text-[10px] text-rose-500 hover:text-rose-700 transition"
+                      >
+                        Reset to default
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="url"
+                    placeholder="https://discord.com/api/webhooks/..."
+                    value={webhookUrl}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setWebhookUrl(val);
+                      if (typeof window !== "undefined") {
+                        if (val) {
+                          localStorage.setItem("jasmine_webhook_url", val);
+                        } else {
+                          localStorage.removeItem("jasmine_webhook_url");
+                        }
+                      }
+                    }}
+                    className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-pink-300"
+                  />
+                  <p className="text-[10px] text-slate-500 leading-relaxed">
+                    Leave blank to post to {recipientName}&apos;s server (#❋・recs). If you enter your server&apos;s channel webhook URL, Jasmine will send this recommendation directly to your channel!
+                  </p>
+                </div>
+              </details>
+            </div>
+
             {/* Post to Discord Action */}
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+            <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <span className="text-xs text-slate-400">
-                Posts to <strong className="text-slate-600">#❋・recs</strong> webhook
+                {webhookUrl ? (
+                  <>Posts to <strong className="text-pink-600">Custom Server Webhook</strong></>
+                ) : (
+                  <>Posts to <strong className="text-slate-600">#❋・recs</strong> webhook</>
+                )}
               </span>
 
               <button
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleSubmitRec}
-                className="flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-xs sm:text-sm text-white bg-gradient-to-r from-pink-500 via-rose-400 to-sky-400 hover:from-pink-600 hover:to-sky-500 shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 disabled:opacity-50"
+                className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-semibold text-xs sm:text-sm text-white bg-gradient-to-r from-pink-500 via-rose-400 to-sky-400 hover:from-pink-600 hover:to-sky-500 shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
@@ -802,7 +860,7 @@ export default function Home() {
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>Post to #❋・recs 🌸</span>
+                    <span>{webhookUrl ? "Post to Your Discord 🌸" : "Post to #❋・recs 🌸"}</span>
                   </>
                 )}
               </button>

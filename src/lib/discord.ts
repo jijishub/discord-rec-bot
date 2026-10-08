@@ -206,12 +206,29 @@ export async function sendWebhook(
   customWebhookUrl?: string,
   fileAttachments: { blob: Blob; filename: string }[] = []
 ): Promise<{ success: boolean; error?: string }> {
-  const webhookUrl = customWebhookUrl || process.env.DISCORD_WEBHOOK_URL;
+  const isCustom = Boolean(customWebhookUrl && customWebhookUrl.trim().length > 0);
+  const webhookUrl = isCustom
+    ? customWebhookUrl!.trim()
+    : process.env.DISCORD_WEBHOOK_URL;
 
   if (!webhookUrl) {
     return {
       success: false,
       error: "No Discord Webhook URL configured. Please configure it in .env or the Settings panel.",
+    };
+  }
+
+  // Strict validation for Discord Webhook URLs
+  const isValidDiscordWebhook =
+    /^https:\/\/(?:ptb\.|canary\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+$/i.test(
+      webhookUrl
+    );
+
+  if (!isValidDiscordWebhook) {
+    return {
+      success: false,
+      error:
+        "Invalid Discord Webhook URL format. It must look like: https://discord.com/api/webhooks/{id}/{token}",
     };
   }
 
@@ -249,10 +266,30 @@ export async function sendWebhook(
     }
 
     if (!res.ok) {
-      const errText = await res.text();
+      let errDetails = "";
+      try {
+        const json = await res.json();
+        errDetails = json.message || JSON.stringify(json);
+      } catch {
+        errDetails = await res.text();
+      }
+
+      if (res.status === 404 || res.status === 401) {
+        return {
+          success: false,
+          error: "Discord Webhook not found or token expired. Please verify your Webhook URL.",
+        };
+      }
+      if (res.status === 403) {
+        return {
+          success: false,
+          error: "Discord Webhook missing permissions to send messages to that channel.",
+        };
+      }
+
       return {
         success: false,
-        error: `Discord Webhook error (${res.status}): ${errText}`,
+        error: `Discord Webhook error (${res.status}): ${errDetails}`,
       };
     }
 
