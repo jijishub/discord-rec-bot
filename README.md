@@ -1,14 +1,28 @@
 # ୨୧ Jasmine ┆ Discord Recommendation Studio & Gateway 🌸🧋
 
-> **An aesthetic community curation platform that streamlines sharing anime, novels, and media through beautifully formatted Discord embeds. Combines an intuitive web composer featuring AI-assisted metadata drafting with native in-chat Discord interactions. 🌸 NO COST DEPLOYMENT.**
+> **An aesthetic community curation platform that streamlines sharing anime, novels, and media through beautifully formatted Discord embeds. Combines an intuitive web composer featuring AI-assisted metadata drafting with native in-chat Discord interactions. 🌸 This is a zero-cost deployment.**
 
 > 🍡 **Palette & Mood**: Baby pink (`#fce7f3`), Ayato pastel blue (`#c0c8ff`), Milktea boba (`#ffd2af`), Dango mochi (`#9cf8b5`), and Sakura blossoms 🌸
+
+> 💭 *this has been a project ive been wanting to make since college*
+
+[![Add Jasmine to Discord](https://img.shields.io/badge/Discord-Add%20Jasmine%20🌸-f472b6?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/oauth2/authorize?client_id=1557445475685113886)
+[![Web Portal](https://img.shields.io/badge/Web_Portal-rec.jizellecasia.site-38bdf8?style=for-the-badge&logo=vercel&logoColor=white)](https://rec.jizellecasia.site)
+[![License: MIT](https://img.shields.io/badge/License-MIT-a78bfa?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 ---
 
 ## 🍡 Introduction
 
+> *this has been a project ive been wanting to make since college*
+
 **Jasmine 🌸** is a lightweight, aesthetic recommendation studio designed for Discord communities. It pairs a self-hosted web curation studio with Discord webhooks and slash commands, letting you curate, organize, and publish beautiful recommendations for Anime, Manga, Novels, Movies, Games, Cafés, and more.
+
+### 🌸 Universal Discord Bot Invite Link:
+Anyone can add Jasmine to their Discord server or install it directly to their user profile:
+👉 **[Add Jasmine to Discord (Universal Invite)](https://discord.com/oauth2/authorize?client_id=1557445475685113886)**
+- **Guild Install**: Adds Jasmine to your server so all members can use `/rec` and send recommendations.
+- **User Install**: Adds Jasmine to your personal Discord account so you can invoke `/rec` in any server or direct message!
 
 ### 🍵 The Two Halves of Jasmine:
 1. **The Web Studio (`rec.jizellecasia.site` or `your-app.vercel.app`)**:
@@ -18,9 +32,13 @@
    - Multi-image drag-and-drop mosaic gallery support (up to 9 images).
    - AI Assistant auto-fill powered by your reverse proxy (`gpt-5.6-luna`, Gemini Pro).
    - Dynamic category manager with cross-device cloud persistence via Upstash Redis.
+   - **Google SSO Admin Portal (`/admin`)**: Secure Google OAuth authentication protecting category management, flower icons, and bot persona settings from public modification.
 2. **The In-Discord Bot (`Jasmine#6656`)**:
-   - Direct Discord slash command (`/rec`) to post recommendations from inside Discord.
-   - Right-click message context menu (`Apps -> Turn into Rec`) to instantly convert any message or photo in chat into an aesthetic recommendation embed in `#✻・recs`.
+   - Direct Discord slash command (`/rec`) with support for up to 4 image attachments (`image`, `image_2`, `image_3`, `image_4`) + 1 external `image_url`.
+   - **Multi-Server Channel Routing**: Posts directly to whatever channel or server the command was invoked in.
+   - **Instant JSON Execution (<800ms)**: Instant serverless response eliminating Discord timeout warnings.
+   - **Universal Installation**: Install to any server or user profile via the **[Universal Invite Link](https://discord.com/oauth2/authorize?client_id=1557445475685113886)**!
+   - Right-click message context menu (`Apps -> Turn into Rec`) to instantly convert any message or photo in chat into an aesthetic recommendation embed.
    - Optional lightweight 24/7 gateway worker to display a permanent green **🟢 Online** status.
 
 ---
@@ -32,14 +50,22 @@
   - **Free Vercel Subdomain**: Deploy straight to `your-app.vercel.app` for $0 with full HTTPS. *(A custom domain is completely optional!)*
   - **Skip the Always-Online Bot**: The 24/7 background worker is purely an aesthetic visual touch (green circle in member list). You can skip it entirely—all recommendation submissions, slash commands, context menus, and live previews function 100% serverless at $0 cost!
 
+- 🌸 **Universal Bot & Multi-Server Support**:
+  - Add Jasmine to any server or user profile using the universal OAuth2 link.
+  - Context-aware channel posting for all Discord servers.
+
+- 👑 **Google SSO Admin Portal**:
+  - Secure `/admin` dashboard restricted to verified Google accounts with cryptographic HMAC session cookies.
+  - Keeps categories, icons, and persona protected while allowing public community submissions.
+
 - 🍡 **Dynamic Categories & 1:1 Icon Uploads**:
   - Add, edit, or customize any category (name, emoji, border accent color, thumbnail icon) directly in the web UI.
-  - No hardcoding: update categories and flower icons anytime without redeploying code.
+  - Pre-seeded with built-in flower icons (`/movie.png`, `/anime.png`, `/manga.png`, etc.) resolved through the CDN.
   - Automatically syncs to Upstash Redis across all devices.
 
-- 🧋 **Multi-Image Mosaic Galleries**:
-  - Drag-and-drop or link up to 9 images per recommendation.
-  - Automatically formatted into a Discord media mosaic gallery.
+- 🧋 **Multi-Image Mosaic Galleries & Attachments**:
+  - Web Studio: Drag-and-drop or link up to 9 images per recommendation.
+  - Discord `/rec`: Attach up to 4 images + 1 image URL directly in chat.
 
 - 🎐 **Live Discord Dark Mode Preview**:
   - Real-time side-by-side preview reproducing your server's exact Discord embed layout (category header, title, synopsis, blockquote personal notes, 2-column inline metadata, top-right category icon, and custom footer).
@@ -112,6 +138,14 @@ AI_DEFAULT_MODEL=gpt-5.6-luna
 # Upstash Redis (Optional - for cross-device cloud persistence)
 UPSTASH_REDIS_REST_URL=https://your-upstash-database.upstash.io
 UPSTASH_REDIS_REST_TOKEN=your_upstash_token
+
+# Admin Portal Protection (Google SSO)
+ADMIN_EMAIL=your_email@gmail.com
+# Optional additional admins:
+# ADMIN_EMAILS=your_email@gmail.com,alt@gmail.com
+# Google OAuth Credentials (Google Cloud Console -> APIs & Services -> Credentials)
+GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
 ### 3. Run Development Server
@@ -124,12 +158,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## ❀ Registering Discord Commands
 
-To register the `/rec` slash command and `Turn into Rec` context menu in your Discord server:
+To register the `/rec` slash command (with multi-image support: `image`, `image_2`, `image_3`, `image_4`, `image_url`) and `Turn into Rec` context menu:
 
 ```bash
 npm run register-commands
 ```
-This registers the commands specifically to your server (`DISCORD_GUILD_ID`) instantly without the 1-hour delay of global commands.
+This registers the commands both globally and directly to your primary guild (`DISCORD_GUILD_ID`), ensuring instant availability without waiting for Discord's global command sync.
 
 ---
 
@@ -184,10 +218,13 @@ npm run bot
 
 - 🌸 **Phase 1 (Current & Production-Ready)**:
   - Full-stack Web Studio deployed on Vercel (`rec.jizellecasia.site`).
-  - Serverless Discord slash commands (`/rec`) and message context menu (`Apps -> Turn into Rec`) via HTTP Interactions endpoint.
+  - **Universal Bot & Multi-Server Support**: Installable to any server or user profile via OAuth2.
+  - **Multi-Attachment Slash Command (`/rec`)**: Up to 4 direct image uploads + 1 image URL with sub-800ms JSON responses.
+  - **Google OAuth SSO Admin Portal (`/admin`)**: Cryptographic HMAC session security protecting categories, icons, and persona settings.
+  - Serverless Discord Interactions endpoint (`/api/interactions`) and message context menu (`Apps -> Turn into Rec`).
   - Category-aware AI recommendation auto-fill via reverse proxy (`your-ai-endpoint.example`).
   - Upstash Redis cloud persistence for custom 1:1 flower icons, categories, and bot persona.
-  - Multi-image mosaic gallery embeds (up to 9 images per recommendation).
+  - Multi-image mosaic gallery embeds (up to 9 images per recommendation in Web Studio).
 
 - 🍡 **Phase 2 (Planned QOL & Infrastructure)**:
   - **Bare Metal to Cloud VM Migration**: Migrate the standalone gateway background worker (`gateway-standalone/`) from bare-metal Google Cloud to a dedicated cloud VM so Jasmine's green 🟢 Online presence status stays permanently active 24/7 in the server member list. *(Aesthetic QOL only—all webhook dispatches, web studio curation, and slash commands continue to work seamlessly without the green circle).*
@@ -201,6 +238,7 @@ npm run bot
 |---|---|---|
 | **Frontend Framework** | **Next.js 15 (App Router)** | Modern React server & client components with streaming |
 | **UI Library** | **React 19 & Tailwind CSS** | Soft pastel theme, responsive grid, glassmorphic modals |
+| **Admin Security** | **Google OAuth SSO & HMAC** | Single Sign-On admin auth with sha256 cookie session tokens |
 | **Icons & Symbols** | **Lucide Icons & Coolsymbols** | Clean UI icons paired with Japanese dango / sakura typography |
 | **Image Processing** | **HTML5 Canvas API** | 1:1 square auto-centering cropper with client-side compression |
 | **Cloud Database** | **Upstash Redis (REST)** | Serverless key-value persistence for categories, icons & persona |
