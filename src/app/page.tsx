@@ -832,6 +832,22 @@ export default function Home() {
                   <p className="text-[10px] text-slate-500 leading-relaxed">
                     Leave blank to post to {recipientName}&apos;s server (#❋・recs). If you enter your server&apos;s channel webhook URL, Jasmine will send this recommendation directly to your channel!
                   </p>
+
+                  {/* Short & Simple Webhook Mini-Guide */}
+                  <div className="mt-2.5 p-2.5 rounded-xl bg-white border border-pink-100 text-[11px] text-slate-600 space-y-1">
+                    <p className="font-semibold text-slate-700 flex items-center gap-1">
+                      <span>💡</span>
+                      <span>How to get your Webhook URL:</span>
+                    </p>
+                    <ol className="list-decimal list-inside space-y-0.5 text-[10.5px] text-slate-500">
+                      <li>In Discord, right-click your channel → <strong>Edit Channel ⚙️</strong></li>
+                      <li>Go to <strong>Integrations → Webhooks → New Webhook</strong></li>
+                      <li>Click <strong>Copy Webhook URL</strong> and paste it above!</li>
+                    </ol>
+                    <p className="text-[10px] text-slate-400 pt-0.5">
+                      🔒 <strong>Permissions:</strong> Standard <em>Send Messages</em> and <em>Embed Links</em> permissions are all that&apos;s needed (enabled by default for webhooks).
+                    </p>
+                  </div>
                 </div>
               </details>
             </div>
