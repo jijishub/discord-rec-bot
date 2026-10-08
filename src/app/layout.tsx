@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   description: "Aesthetic recommendation creator for ◜― ✿ Jizelle's Space ✿",
   manifest: "/manifest.json",
   icons: {
-    icon: "/maomao-bg.png",
-    shortcut: "/maomao-bg.png",
+    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>",
+    shortcut: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>",
     apple: [
       { url: "/maomao-bg.png", sizes: "180x180", type: "image/png" },
     ],
