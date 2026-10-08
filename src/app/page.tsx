@@ -25,6 +25,7 @@ export default function Home() {
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
   const [selectedCatId, setSelectedCatId] = useState<string>("movie");
   const [persona, setPersona] = useState<BotPersona>(DEFAULT_BOT_PERSONA);
+  const [destinationMode, setDestinationMode] = useState<"jizelle" | "custom">("jizelle");
   const [webhookUrl, setWebhookUrl] = useState<string>("");
   const [aiSettings, setAiSettings] = useState({
     baseUrl: "",
@@ -281,8 +282,8 @@ export default function Home() {
 
   // AI Auto-fill trigger
   const handleTriggerAi = async () => {
-    if (!formData.title && !formData.description) {
-      alert("Please provide at least a title or some rough notes for AI auto-fill.");
+    if (!formData.title && !formData.description && (!formData.images || formData.images.length === 0)) {
+      alert("Please provide at least a title, notes, or an image for AI auto-fill.");
       return;
     }
 
@@ -345,6 +346,20 @@ export default function Home() {
       return;
     }
 
+    if (destinationMode === "custom") {
+      if (!webhookUrl.trim()) {
+        alert("Please enter your Discord Webhook URL to send to your channel.");
+        return;
+      }
+      const isValidWebhook = /^https:\/\/(?:ptb\.|canary\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+$/i.test(
+        webhookUrl.trim()
+      );
+      if (!isValidWebhook) {
+        alert("Please enter a valid Discord Webhook URL (format: https://discord.com/api/webhooks/{id}/{token})");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     setStatusMessage(null);
 
@@ -359,7 +374,7 @@ export default function Home() {
           },
           category: activeCategory,
           persona: persona,
-          webhookUrl: webhookUrl ? webhookUrl.trim() : undefined,
+          webhookUrl: destinationMode === "custom" && webhookUrl.trim() ? webhookUrl.trim() : undefined,
         }),
       });
 
@@ -377,7 +392,7 @@ export default function Home() {
         throw new Error(json?.error || `Server returned ${res.status}: ${res.statusText || "Request failed"}`);
       }
 
-      const dest = webhookUrl?.trim() ? "your Discord channel" : "#❋・recs in Discord";
+      const dest = destinationMode === "custom" ? "your Discord channel" : `#❋・recs in ${recipientName}'s Space`;
       setStatusMessage({
         type: "success",
         text: `✨ Recommendation successfully posted to ${dest}! 🌸`,
@@ -505,6 +520,124 @@ export default function Home() {
           )}
 
           <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-pink-100/80 space-y-6">
+            {/* Top Destination Selector Tabs */}
+            <div className="space-y-3">
+              <div className="flex p-1 bg-pink-100/60 rounded-2xl border border-pink-200/60">
+                <button
+                  type="button"
+                  onClick={() => setDestinationMode("jizelle")}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition ${
+                    destinationMode === "jizelle"
+                      ? "bg-white text-slate-800 shadow-xs border border-pink-100/80"
+                      : "text-slate-500 hover:text-slate-800 hover:bg-white/40"
+                  }`}
+                >
+                  <span>💌</span>
+                  <span>Send Rec to {recipientName}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDestinationMode("custom")}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition ${
+                    destinationMode === "custom"
+                      ? "bg-white text-pink-700 shadow-xs border border-pink-200/80"
+                      : "text-slate-500 hover:text-pink-600 hover:bg-white/40"
+                  }`}
+                >
+                  <span>🌸</span>
+                  <span>Send Rec to My Custom Webhook</span>
+                </button>
+              </div>
+
+              {/* Custom Webhook Destination Panel (Active when 'custom' tab is selected) */}
+              {destinationMode === "custom" && (
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-pink-50/80 via-white to-rose-50/40 border border-pink-200/80 shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                      <span>🌸</span>
+                      <span>Your Discord Channel Webhook URL</span>
+                      <span className="text-[10px] text-rose-500 font-normal">*required</span>
+                    </label>
+                    {webhookUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWebhookUrl("");
+                          if (typeof window !== "undefined") {
+                            localStorage.removeItem("jasmine_webhook_url");
+                          }
+                        }}
+                        className="text-[11px] text-rose-500 hover:text-rose-700 font-medium transition"
+                      >
+                        Clear URL
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      type="url"
+                      placeholder="https://discord.com/api/webhooks/..."
+                      value={webhookUrl}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setWebhookUrl(val);
+                        if (typeof window !== "undefined") {
+                          if (val) {
+                            localStorage.setItem("jasmine_webhook_url", val);
+                          } else {
+                            localStorage.removeItem("jasmine_webhook_url");
+                          }
+                        }
+                      }}
+                      className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl border bg-white focus:outline-none focus:ring-2 focus:ring-pink-300 transition ${
+                        webhookUrl &&
+                        !/^https:\/\/(?:ptb\.|canary\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+$/i.test(
+                          webhookUrl.trim()
+                        )
+                          ? "border-rose-300 text-rose-700"
+                          : "border-pink-200 text-slate-700"
+                      }`}
+                    />
+                    {webhookUrl &&
+                      /^https:\/\/(?:ptb\.|canary\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+$/i.test(
+                        webhookUrl.trim()
+                      ) && (
+                        <span className="absolute right-3 top-2.5 text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Ready
+                        </span>
+                      )}
+                  </div>
+
+                  {webhookUrl &&
+                    !/^https:\/\/(?:ptb\.|canary\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+$/i.test(
+                      webhookUrl.trim()
+                    ) && (
+                      <p className="text-[11px] text-rose-600 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        Must be a valid Discord Webhook URL starting with https://discord.com/api/webhooks/...
+                      </p>
+                    )}
+
+                  {/* Short & Simple Webhook Mini-Guide */}
+                  <div className="p-3 rounded-xl bg-white/90 border border-pink-100/90 text-xs text-slate-600 space-y-1.5 shadow-2xs">
+                    <p className="font-semibold text-slate-700 flex items-center gap-1 text-[11px]">
+                      <span>💡</span>
+                      <span>How to get your Webhook URL (3 quick steps):</span>
+                    </p>
+                    <ol className="list-decimal list-inside space-y-0.5 text-[11px] text-slate-500">
+                      <li>In Discord, right-click your channel → <strong>Edit Channel ⚙️</strong></li>
+                      <li>Go to <strong>Integrations → Webhooks → New Webhook</strong></li>
+                      <li>Click <strong>Copy Webhook URL</strong> and paste it above!</li>
+                    </ol>
+                    <p className="text-[10px] text-slate-400 pt-0.5">
+                      🔒 <strong>Permissions:</strong> Standard <em>Send Messages</em> and <em>Embed Links</em> permissions are all that&apos;s needed (enabled by default for webhooks).
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* 1. Category Selection */}
             <div>
               <div className="mb-2.5">
@@ -831,83 +964,13 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Custom Destination Webhook (Optional for Members from other servers) */}
-            <div className="pt-2">
-              <details className="group rounded-2xl border border-pink-100/90 bg-pink-50/25 p-3.5 transition open:bg-pink-50/50">
-                <summary className="cursor-pointer text-xs font-semibold text-slate-700 flex items-center justify-between select-none">
-                  <span className="flex items-center gap-1.5">
-                    <span>⚙️</span>
-                    <span>Sending to another Discord server? <span className="font-normal text-slate-400">(Optional)</span></span>
-                  </span>
-                  <span className="text-[10px] text-pink-500 group-open:rotate-180 transition-transform">▼</span>
-                </summary>
-                <div className="mt-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-[11px] font-semibold text-slate-700">
-                      Destination Channel Webhook URL
-                    </label>
-                    {webhookUrl && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setWebhookUrl("");
-                          if (typeof window !== "undefined") {
-                            localStorage.removeItem("jasmine_webhook_url");
-                          }
-                        }}
-                        className="text-[10px] text-rose-500 hover:text-rose-700 transition"
-                      >
-                        Reset to default
-                      </button>
-                    )}
-                  </div>
-                  <input
-                    type="url"
-                    placeholder="https://discord.com/api/webhooks/..."
-                    value={webhookUrl}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setWebhookUrl(val);
-                      if (typeof window !== "undefined") {
-                        if (val) {
-                          localStorage.setItem("jasmine_webhook_url", val);
-                        } else {
-                          localStorage.removeItem("jasmine_webhook_url");
-                        }
-                      }
-                    }}
-                    className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-pink-300"
-                  />
-                  <p className="text-[10px] text-slate-500 leading-relaxed">
-                    Leave blank to post to {recipientName}&apos;s server (#❋・recs). If you enter your server&apos;s channel webhook URL, Jasmine will send this recommendation directly to your channel!
-                  </p>
-
-                  {/* Short & Simple Webhook Mini-Guide */}
-                  <div className="mt-2.5 p-2.5 rounded-xl bg-white border border-pink-100 text-[11px] text-slate-600 space-y-1">
-                    <p className="font-semibold text-slate-700 flex items-center gap-1">
-                      <span>💡</span>
-                      <span>How to get your Webhook URL:</span>
-                    </p>
-                    <ol className="list-decimal list-inside space-y-0.5 text-[10.5px] text-slate-500">
-                      <li>In Discord, right-click your channel → <strong>Edit Channel ⚙️</strong></li>
-                      <li>Go to <strong>Integrations → Webhooks → New Webhook</strong></li>
-                      <li>Click <strong>Copy Webhook URL</strong> and paste it above!</li>
-                    </ol>
-                    <p className="text-[10px] text-slate-400 pt-0.5">
-                      🔒 <strong>Permissions:</strong> Standard <em>Send Messages</em> and <em>Embed Links</em> permissions are all that&apos;s needed (enabled by default for webhooks).
-                    </p>
-                  </div>
-                </div>
-              </details>
-            </div>
-
             {/* Post to Discord Action */}
             <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <span className="text-xs text-slate-400">
-                {webhookUrl ? (
-                  <>Posts to <strong className="text-pink-600">Custom Server Webhook</strong></>
+                {destinationMode === "custom" ? (
+                  <>Destination: <strong className="text-pink-600">Your Discord Channel Webhook</strong></>
                 ) : (
-                  <>Posts to <strong className="text-slate-600">#❋・recs</strong> webhook</>
+                  <>Destination: <strong className="text-slate-600">#❋・recs in {recipientName}&apos;s Space</strong></>
                 )}
               </span>
 
@@ -925,7 +988,11 @@ export default function Home() {
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>{webhookUrl ? "Post to Your Discord 🌸" : "Post to #❋・recs 🌸"}</span>
+                    <span>
+                      {destinationMode === "custom"
+                        ? "Send Rec to My Discord 🌸"
+                        : `Send Rec to ${recipientName} 💌`}
+                    </span>
                   </>
                 )}
               </button>
@@ -960,7 +1027,11 @@ export default function Home() {
                 <span>Live Discord Webhook</span>
               </p>
               <p className="leading-relaxed">
-                Recommendations submitted here are posted directly to <strong>#❋・recs</strong>! Check out the live channel in Discord to see the published embed card.
+                {destinationMode === "custom" ? (
+                  <>Recommendations submitted will be sent directly to <strong>your Discord channel</strong> using your custom webhook!</>
+                ) : (
+                  <>Recommendations submitted will be posted directly to <strong>#❋・recs</strong> in {recipientName}&apos;s Space!</>
+                )}
               </p>
             </div>
 

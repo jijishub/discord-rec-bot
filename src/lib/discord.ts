@@ -1,4 +1,5 @@
 import { Category, RecFormData, BotPersona, DiscordEmbed, DiscordWebhookPayload } from "@/types";
+import { DEFAULT_CATEGORIES } from "@/lib/categories";
 
 export function hexToDecimal(hex: string): number {
   const cleanHex = hex.replace("#", "");
@@ -64,24 +65,31 @@ export function buildDiscordEmbeds(
   const fileAttachments: { blob: Blob; filename: string }[] = [];
   const embedColor = hexToDecimal(data.customColor || category.color);
 
-  // Check if category icon is an uploaded base64 image
+  // Resolve category flower icon (always use authentic flower icons, never generic twemoji)
   let resolvedIconUrl = category.iconUrl;
-  if (category.iconUrl && category.iconUrl.startsWith("data:")) {
-    if (options?.isInteraction) {
-      // In synchronous Discord Interaction responses, attachment:// without multipart is rejected by Discord.
-      // Use clean online CDN fallback for interaction embeds
-      resolvedIconUrl = "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f338.png";
-    } else {
+
+  // If no iconUrl or base64 data URL, find matching clean flower icon from DEFAULT_CATEGORIES
+  if (!resolvedIconUrl || resolvedIconUrl.startsWith("data:")) {
+    const defaultCat = DEFAULT_CATEGORIES.find(
+      (c) =>
+        c.id.toLowerCase() === category.id.toLowerCase() ||
+        c.name.toLowerCase() === category.name.toLowerCase()
+    );
+    if (defaultCat?.iconUrl && !defaultCat.iconUrl.startsWith("data:")) {
+      resolvedIconUrl = defaultCat.iconUrl;
+    } else if (!options?.isInteraction && category.iconUrl?.startsWith("data:")) {
       const parsedIcon = parseBase64DataUrl(category.iconUrl);
       if (parsedIcon) {
         const iconFilename = `cat_icon_${parsedIcon.filename}`;
         fileAttachments.push({ blob: parsedIcon.blob, filename: iconFilename });
         resolvedIconUrl = `attachment://${iconFilename}`;
       }
+    } else {
+      resolvedIconUrl = "/others.png";
     }
   }
 
-  // Resolve relative URLs (e.g. /movie.png, /food (drink).png) to absolute public URLs for Discord
+  // Resolve relative URLs (e.g. /movie.png, /anime.png, /novels.png) to absolute public URLs for Discord
   if (resolvedIconUrl && resolvedIconUrl.startsWith("/")) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rec.jizellecasia.site";
     resolvedIconUrl = `${baseUrl.replace(/\/+$/, "")}${encodeURI(resolvedIconUrl)}`;
