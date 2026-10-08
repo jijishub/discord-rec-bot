@@ -8,31 +8,35 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       data,
+      formData,
       category,
       persona = DEFAULT_BOT_PERSONA,
       webhookUrl,
     }: {
-      data: RecFormData;
+      data?: RecFormData;
+      formData?: RecFormData;
       category: Category;
       persona?: BotPersona;
       webhookUrl?: string;
     } = body;
 
-    if (!data || !category) {
+    const recData = data || formData;
+
+    if (!recData || !category) {
       return NextResponse.json(
         { error: "Missing required data or category" },
         { status: 400 }
       );
     }
 
-    if (!data.title?.trim()) {
+    if (!recData.title?.trim()) {
       return NextResponse.json(
         { error: "Recommendation title is required" },
         { status: 400 }
       );
     }
 
-    const { embeds, fileAttachments } = buildDiscordEmbeds(data, category, persona);
+    const { embeds, fileAttachments } = buildDiscordEmbeds(recData, category, persona);
 
     let avatarUrl = persona.avatarUrl || process.env.BOT_AVATAR_URL || "/maomao.png";
     if (avatarUrl && avatarUrl.startsWith("/")) {

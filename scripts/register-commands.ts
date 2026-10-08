@@ -34,6 +34,12 @@ const commands = [
         autocomplete: true,
       },
       {
+        name: "ai-instructions",
+        description: "✨ Ask Jasmine AI to auto-draft details (e.g. 'summarize why this is great')",
+        type: 3, // STRING
+        required: false,
+      },
+      {
         name: "description",
         description: "Brief synopsis or overview of the work",
         type: 3, // STRING

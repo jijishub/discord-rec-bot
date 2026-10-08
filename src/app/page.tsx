@@ -221,16 +221,55 @@ export default function Home() {
     filesToProcess.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        const base64 = event.target?.result as string;
-        if (base64) {
-          setFormData((prev) => ({
-            ...prev,
-            images: [...prev.images, base64],
-          }));
-        }
+        const rawBase64 = event.target?.result as string;
+        if (!rawBase64) return;
+
+        // Auto-scale to max 1280px and compress to JPEG to keep payloads compact and avoid 413 errors
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1280;
+          let width = img.naturalWidth;
+          let height = img.naturalHeight;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL("image/jpeg", 0.82);
+            setFormData((prev) => {
+              if (prev.images.length >= 9) return prev;
+              return {
+                ...prev,
+                images: [...prev.images, compressed],
+              };
+            });
+          } else {
+            setFormData((prev) => {
+              if (prev.images.length >= 9) return prev;
+              return {
+                ...prev,
+                images: [...prev.images, rawBase64],
+              };
+            });
+          }
+        };
+        img.src = rawBase64;
       };
       reader.readAsDataURL(file);
     });
+    e.target.value = "";
   };
 
   const handleRemoveImage = (index: number) => {
@@ -259,6 +298,7 @@ export default function Home() {
           rawInput: `${formData.description}\n${formData.personalNotes}`,
           category: activeCategory.name,
           prompt: aiCustomInstruction,
+          images: formData.images,
           model: aiSettings.model || serverConfig?.defaultModel || "gpt-5.6-luna",
           apiKey: aiSettings.apiKey ? aiSettings.apiKey.trim() : undefined,
           apiBaseUrl: aiSettings.baseUrl ? aiSettings.baseUrl.trim() : undefined,
@@ -319,19 +359,28 @@ export default function Home() {
           },
           category: activeCategory,
           persona: persona,
-          webhookUrl: webhookUrl || undefined,
+          webhookUrl: webhookUrl ? webhookUrl.trim() : undefined,
         }),
       });
 
-      const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json.error || "Failed to send webhook to Discord");
+      let json: { success?: boolean; error?: string; message?: string } | null = null;
+      try {
+        json = await res.json();
+      } catch {
+        // Not valid JSON
       }
 
+      if (!res.ok) {
+        if (res.status === 413) {
+          throw new Error("Attached images exceed upload limits. Please remove or link large files via URL.");
+        }
+        throw new Error(json?.error || `Server returned ${res.status}: ${res.statusText || "Request failed"}`);
+      }
+
+      const dest = webhookUrl?.trim() ? "your Discord channel" : "#❋・recs in Discord";
       setStatusMessage({
         type: "success",
-        text: "✨ Recommendation successfully posted to #❋・recs in Discord!",
+        text: `✨ Recommendation successfully posted to ${dest}! 🌸`,
       });
 
       // Clear non-essential fields after posting

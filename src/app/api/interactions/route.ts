@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import {
   InteractionType,
   InteractionResponseType,
@@ -7,6 +7,7 @@ import {
 import { DEFAULT_CATEGORIES, DEFAULT_BOT_PERSONA } from "@/lib/categories";
 import { getStoredCategories, getStoredPersona } from "@/lib/redis";
 import { buildDiscordEmbeds } from "@/lib/discord";
+import { enhanceRecWithAI } from "@/lib/ai";
 
 export async function POST(req: NextRequest) {
   try {
@@ -99,6 +100,11 @@ export async function POST(req: NextRequest) {
       if (name === "rec") {
         const options = interaction.data.options || [];
         const titleOption = options.find((opt: { name: string }) => opt.name === "title");
+        const aiOption = options.find(
+          (opt: { name: string }) =>
+            opt.name === "ai-instructions" || opt.name === "ai_instructions"
+        );
+        const aiInstructions = aiOption?.value as string;
         const descriptionOption = options.find((opt: { name: string }) => opt.name === "description");
         const categoryOption = options.find((opt: { name: string }) => opt.name === "category");
         const notesOption = options.find((opt: { name: string }) => opt.name === "notes");
@@ -175,6 +181,79 @@ export async function POST(req: NextRequest) {
           interaction.user?.username ||
           "Jasmine";
 
+        // If user requested AI instructions, acknowledge immediately (type 5) and enhance in background
+        if (aiInstructions && aiInstructions.trim()) {
+          const applicationId =
+            interaction.application_id || process.env.DISCORD_APPLICATION_ID;
+          const token = interaction.token;
+
+          after(async () => {
+            try {
+              const aiResult = await enhanceRecWithAI({
+                title: title,
+                category: category.name,
+                prompt: aiInstructions.trim(),
+                rawInput: `${notes || ""}\n${description || ""}`.trim(),
+                images: finalImages,
+              });
+
+              const aiData = aiResult.success && aiResult.data ? aiResult.data : null;
+
+              const recData = {
+                categoryId: category.id,
+                title: title || aiData?.title || "New Recommendation",
+                description: description || aiData?.description || "",
+                personalNotes: notes || aiData?.personalNotes || "",
+                tags: tags || aiData?.tags || "",
+                platform: platform || aiData?.platform || "",
+                duration: duration || aiData?.duration || "",
+                creator: creator || aiData?.creator || "",
+                images: finalImages,
+                source: authorName,
+              };
+
+              const { embeds } = buildDiscordEmbeds(recData, category, activePersona, {
+                isInteraction: true,
+              });
+
+              const patchUrl = `https://discord.com/api/v10/webhooks/${applicationId}/${token}/messages/@original`;
+              await fetch(patchUrl, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ embeds }),
+              });
+            } catch (err) {
+              console.error("AI enhancement in /rec failed:", err);
+              const fallbackRecData = {
+                categoryId: category.id,
+                title: title || "New Recommendation",
+                description: description || "",
+                personalNotes: notes,
+                tags: tags || "",
+                platform: platform || "",
+                duration: duration || "",
+                creator: creator || "",
+                images: finalImages,
+                source: authorName,
+              };
+              const { embeds } = buildDiscordEmbeds(fallbackRecData, category, activePersona, {
+                isInteraction: true,
+              });
+              const patchUrl = `https://discord.com/api/v10/webhooks/${applicationId}/${token}/messages/@original`;
+              await fetch(patchUrl, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ embeds }),
+              });
+            }
+          });
+
+          return NextResponse.json({
+            type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+          });
+        }
+
+        // Standard instant response without AI
         const recData = {
           categoryId: category.id,
           title: title || "New Recommendation",

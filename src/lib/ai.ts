@@ -6,6 +6,7 @@ export interface AIEnhanceRequest {
   model?: string;
   apiKey?: string;
   apiBaseUrl?: string;
+  images?: string[];
 }
 
 export interface AIEnhanceResult {
@@ -189,6 +190,23 @@ Additional user instruction: ${req.prompt || `Auto-fill missing details aestheti
 
 REMINDER: This recommendation is specifically for the "${categoryContext}" medium (e.g. if "${categoryContext}" is Anime, output the anime's studio, episodes, and streaming service, NOT the manga).`;
 
+  // Multimodal Vision support: if image URLs or base64 are provided, pass them to the model
+  let userContent: string | Array<{ type: string; text?: string; image_url?: { url: string } }> = userPrompt;
+  if (req.images && req.images.length > 0) {
+    const validImages = req.images.filter(
+      (img) => img && (img.startsWith("http://") || img.startsWith("https://") || img.startsWith("data:image/"))
+    );
+    if (validImages.length > 0) {
+      userContent = [
+        { type: "text", text: userPrompt },
+        ...validImages.slice(0, 3).map((url) => ({
+          type: "image_url",
+          image_url: { url },
+        })),
+      ];
+    }
+  }
+
   try {
     const res = await fetch(endpoint, {
       method: "POST",
@@ -201,7 +219,7 @@ REMINDER: This recommendation is specifically for the "${categoryContext}" mediu
         stream: false,
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
+          { role: "user", content: userContent },
         ],
         temperature: 0.7,
       }),

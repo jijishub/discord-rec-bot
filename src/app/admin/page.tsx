@@ -234,16 +234,50 @@ export default function AdminPage() {
     filesToProcess.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        const base64Url = event.target?.result as string;
-        if (base64Url) {
-          setFormData((prev) => {
-            if (prev.images.length >= 9) return prev;
-            return {
-              ...prev,
-              images: [...prev.images, base64Url],
-            };
-          });
-        }
+        const rawBase64 = event.target?.result as string;
+        if (!rawBase64) return;
+
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1280;
+          let width = img.naturalWidth;
+          let height = img.naturalHeight;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL("image/jpeg", 0.82);
+            setFormData((prev) => {
+              if (prev.images.length >= 9) return prev;
+              return {
+                ...prev,
+                images: [...prev.images, compressed],
+              };
+            });
+          } else {
+            setFormData((prev) => {
+              if (prev.images.length >= 9) return prev;
+              return {
+                ...prev,
+                images: [...prev.images, rawBase64],
+              };
+            });
+          }
+        };
+        img.src = rawBase64;
       };
       reader.readAsDataURL(file);
     });
@@ -333,9 +367,18 @@ export default function AdminPage() {
         }),
       });
 
-      const result = await res.json();
-      if (!res.ok || !result.success) {
-        throw new Error(result.error || "Failed to post recommendation to Discord");
+      let result: any = null;
+      try {
+        result = await res.json();
+      } catch {
+        // Not valid JSON
+      }
+
+      if (!res.ok || !result?.success) {
+        if (res.status === 413) {
+          throw new Error("Attached images exceed upload limits. Please remove or link large files via URL.");
+        }
+        throw new Error(result?.error || `Server returned status ${res.status}: ${res.statusText || "Request failed"}`);
       }
 
       setStatusMessage({
