@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Category, RecFormData, BotPersona } from "@/types";
 import { buildDiscordEmbeds, sendWebhook } from "@/lib/discord";
 import { DEFAULT_BOT_PERSONA } from "@/lib/categories";
+import { resolveSubEmbed } from "@/lib/url-metadata";
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,6 +37,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!recData.subEmbed) {
+      const linked = await resolveSubEmbed(`${recData.title} ${recData.description} ${recData.personalNotes || ""}`);
+      if (linked.subEmbed) recData.subEmbed = linked.subEmbed;
+      if (linked.videoUrl && !recData.videoUrl) recData.videoUrl = linked.videoUrl;
+    }
     const { embeds, fileAttachments } = buildDiscordEmbeds(recData, category, persona);
 
     let avatarUrl = persona.avatarUrl || process.env.BOT_AVATAR_URL || "/maomao.png";
@@ -47,7 +53,9 @@ export async function POST(req: NextRequest) {
     const payload = {
       username: persona.username || process.env.BOT_USERNAME || "Jasmine 🌸",
       avatar_url: avatarUrl || undefined,
+      content: recData.videoUrl || undefined,
       embeds: embeds,
+      allowed_mentions: { parse: [] },
     };
 
     const result = await sendWebhook(payload, webhookUrl, fileAttachments);

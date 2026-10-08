@@ -17,6 +17,9 @@ export interface AIEnhanceResult {
   duration?: string;
   creator?: string;
   personalNotes?: string;
+  channel?: string;
+  sourceUrl?: string;
+  videoUrl?: string;
 }
 
 /**
@@ -121,6 +124,9 @@ function parseRecommendationJson(rawContent: string): AIEnhanceResult {
     platform: cleanCitationLinks(result.platform),
     description: cleanCitationLinks(result.description),
     personalNotes: cleanCitationLinks(result.personalNotes),
+    channel: cleanCitationLinks(result.channel),
+    sourceUrl: cleanCitationLinks(result.sourceUrl),
+    videoUrl: cleanCitationLinks(result.videoUrl),
   };
 }
 
@@ -165,19 +171,43 @@ You MUST tailor all details, tags, synopsis, duration, creator, and platform str
 - If "${categoryContext}" is "Apps", "Websites", or "Products":
   • Focus on the software tool, site, or physical product, its key utility, developer/brand, and supported platforms.
 
-CRITICAL DISCORD METADATA FORMATTING RULES:
-- Keep "duration" concise and short (under 80 characters, e.g. "2 Volumes / ~224 pages" or "13 Episodes", NOT a long essay).
-- Keep "tags" concise (comma-separated genres under 80 characters).
-- Never include citation links, search grounding links, or URLs like [domain.com](https://...) inside any field.
-- Short, engaging synopsis (description) without spoilers (2-3 sentences).
+CRITICAL TITLE FORMATTING AND RELEASE YEAR RULES:
+- Never invent a year. Omit it if you cannot confidently establish the correct release year.
+- For media categories (Movies, Anime, TV Shows / Drama, Books / Novels, Manga / Manhwa, Games, Music / Albums):
+  • You MUST include the release or publication year in parentheses, e.g. "Everything Everywhere All at Once (2022)", "Spirited Away (2001)", "Frieren: Beyond Journey's End (2023)".
+  • If the user provided a title without a year, identify the accurate release year for that medium and append it in parentheses "(YYYY)".
+  • If the user's title already has the year, keep and polish it.
+  • If the user did not provide a title (or gave a link, notes, or image), identify the title and release year from the input or image.
+- For non-media categories (Products, Food, Drinks, Apps, Websites):
+  • Keep the title clean and recognizable without unnecessary release years unless it is a specific dated version/vintage (e.g. "Best Fragrances", "Ariana Grande Cloud Inspired Perfume").
+
+CRITICAL SHORT DESCRIPTION & URL RULES:
+- Provide an engaging, short synopsis (2-3 sentences max) without spoilers.
+- If the user's notes, description, or input contains URLs (e.g. Twitter/X links, article links, TikTok, etc.):
+  • Do NOT leave raw, ugly URLs in the description text.
+  • Extract the core takeaway or hook for the description.
+  • Return the extracted URL in the "sourceUrl" field so Jasmine can generate a rich sub-embed for it.
+
+VISION & MULTIMODAL INSTRUCTION:
+- You have Vision capabilities. If images are attached, carefully inspect any posters, covers, screenshots, tweets, or labels to identify the title, release year, creator, and category.
+
+CRITICAL METADATA FIELDS:
+- "channel": Where this recommendation was discovered or sourced from, e.g. "@rafiqahakhdar on TikTok", "Twitter thread by @username", "Shopee", "Netflix", "r/books on Reddit".
+- "tags": Concise comma-separated genres or tags (under 80 characters, e.g. "Sci-fi, Adventure, Comedy").
+- "platform": Platform or shop (e.g. "Netflix", "Shopee", "Crunchyroll", "Steam", "Other sites").
+- "duration": Concise duration, length, or price (under 80 characters, e.g. "2h 20m", "12 eps", "Php 105", "320 pages").
+- "creator": Director, author, studio, or creator (e.g. "Dan Kwan, Daniel Scheinert", "Jasmine Warga").
+- "personalNotes": Any personal thoughts, review quotes, or notes formatted cleanly for quote blocks (without raw URLs).
 
 You must respond with valid JSON strictly conforming to this schema:
 {
-  "title": "Clean Title with Year/Status if applicable",
-  "description": "Engaging 2-3 sentence synopsis tailored specifically to the ${categoryContext} format",
+  "title": "Clean Title with Year if applicable (e.g. Everything Everywhere All at Once (2022))",
+  "description": "Engaging 2-3 sentence synopsis without raw URLs",
+  "sourceUrl": "Extracted primary URL if present in input, or empty string",
+  "channel": "Discovered Channel / Source (e.g. @rafiqahakhdar on TikTok, Twitter thread, Shopee) or empty string",
   "tags": "Genre1, Genre2, Genre3",
-  "platform": "Platform or Where to find (specific to ${categoryContext})",
-  "duration": "Concise Length / Runtime / Episodes / Volumes",
+  "platform": "Platform or Where to find",
+  "duration": "Concise Length / Runtime / Episodes / Price",
   "creator": "Creator / Author / Studio / Director",
   "personalNotes": "Optional sweet note or leave empty"
 }

@@ -8,6 +8,7 @@ import { DEFAULT_CATEGORIES, DEFAULT_BOT_PERSONA } from "@/lib/categories";
 import { getStoredCategories, getStoredPersona } from "@/lib/redis";
 import { buildDiscordEmbeds } from "@/lib/discord";
 import { enhanceRecWithAI } from "@/lib/ai";
+import { resolveSubEmbed, extractUrls } from "@/lib/url-metadata";
 
 export async function POST(req: NextRequest) {
   try {
@@ -104,42 +105,57 @@ export async function POST(req: NextRequest) {
           (opt: { name: string }) =>
             opt.name === "ai-instructions" || opt.name === "ai_instructions"
         );
-        const aiInstructions = aiOption?.value as string;
+        const aiInstructions = ((aiOption?.value as string) || "").trim();
         const descriptionOption = options.find((opt: { name: string }) => opt.name === "description");
         const categoryOption = options.find((opt: { name: string }) => opt.name === "category");
         const notesOption = options.find((opt: { name: string }) => opt.name === "notes");
+        const channelOption = options.find((opt: { name: string }) => opt.name === "channel");
         const tagsOption = options.find((opt: { name: string }) => opt.name === "tags");
         const platformOption = options.find((opt: { name: string }) => opt.name === "platform");
         const durationOption = options.find((opt: { name: string }) => opt.name === "duration");
         const creatorOption = options.find((opt: { name: string }) => opt.name === "creator");
         const imageOption = options.find((opt: { name: string }) => opt.name === "image_url");
+        const videoOption = options.find((opt: { name: string }) => opt.name === "video_url");
 
-        const title = titleOption?.value as string;
-        const description = descriptionOption?.value as string;
-        const rawCategoryInput = (categoryOption?.value as string || "").trim();
+        const title = ((titleOption?.value as string) || "").trim();
+        const description = ((descriptionOption?.value as string) || "").trim();
+        const rawCategoryInput = ((categoryOption?.value as string) || "").trim();
         const categoryId = rawCategoryInput.toLowerCase();
-        const notes = notesOption?.value as string;
-        const tags = tagsOption?.value as string;
-        const platform = platformOption?.value as string;
-        const duration = durationOption?.value as string;
-        const creator = creatorOption?.value as string;
-        const imageUrl = imageOption?.value as string;
+        const notes = ((notesOption?.value as string) || "").trim();
+        const channel = ((channelOption?.value as string) || "").trim();
+        const tags = ((tagsOption?.value as string) || "").trim();
+        const platform = ((platformOption?.value as string) || "").trim();
+        const duration = ((durationOption?.value as string) || "").trim();
+        const creator = ((creatorOption?.value as string) || "").trim();
+        const imageUrl = ((imageOption?.value as string) || "").trim();
+        let finalVideoUrl = ((videoOption?.value as string) || "").trim();
 
         const finalImages: string[] = [];
 
-        // 1. Extract all uploaded image attachments (image, image_2, image_3, image_4, etc.)
+        // 1. Extract uploaded attachments (categorize images vs videos)
         if (interaction.data.resolved?.attachments) {
-          const attachments = Object.values(interaction.data.resolved.attachments) as { url?: string }[];
+          const attachments = Object.values(interaction.data.resolved.attachments) as {
+            url?: string;
+            content_type?: string;
+            filename?: string;
+          }[];
           for (const att of attachments) {
-            if (att?.url && !finalImages.includes(att.url)) {
+            if (!att?.url) continue;
+            const isVideo =
+              att.content_type?.startsWith("video/") ||
+              /\.(mp4|webm|mov|mkv)$/i.test(att.filename || "") ||
+              /\.(mp4|webm|mov|mkv)$/i.test(att.url);
+            if (isVideo) {
+              if (!finalVideoUrl) finalVideoUrl = att.url;
+            } else if (att.content_type?.startsWith("image/") && !finalImages.includes(att.url)) {
               finalImages.push(att.url);
             }
           }
         }
 
-        // 2. Extract URLs from image_url option (supports multiple space or comma-separated links)
-        if (imageUrl && imageUrl.trim()) {
-          const urls = imageUrl.trim().split(/[\s,]+/);
+        // 2. Extract URLs from image_url option
+        if (imageUrl) {
+          const urls = imageUrl.split(/[\s,]+/);
           for (const u of urls) {
             if (u.startsWith("http") && !finalImages.includes(u)) {
               finalImages.push(u);
@@ -147,7 +163,7 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // Match category from live active categories (supports name, id, 'others', or custom fallback)
+        // Match category from live active categories
         let category = activeCategories.find(
           (c) =>
             c.id.toLowerCase() === categoryId ||
@@ -181,35 +197,75 @@ export async function POST(req: NextRequest) {
           interaction.user?.username ||
           "Jasmine";
 
-        // If user requested AI instructions, acknowledge immediately (type 5) and enhance in background
-        if (aiInstructions && aiInstructions.trim()) {
+        // Check if there are external URLs in input (e.g. Twitter / web threads)
+        const combinedInputText = `${title} ${description} ${notes}`.trim();
+        const detectedUrls = extractUrls(combinedInputText);
+        const shouldRunAi = Boolean(aiInstructions || !title);
+        const hasExternalUrl = detectedUrls.length > 0;
+
+        // If AI is requested/needed OR external URLs must be resolved for sub-embeds, defer and process asynchronously
+        if (shouldRunAi || hasExternalUrl) {
           const applicationId =
             interaction.application_id || process.env.DISCORD_APPLICATION_ID;
           const token = interaction.token;
 
           after(async () => {
             try {
-              const aiResult = await enhanceRecWithAI({
-                title: title,
-                category: category.name,
-                prompt: aiInstructions.trim(),
-                rawInput: `${notes || ""}\n${description || ""}`.trim(),
-                images: finalImages,
-              });
+              let aiData: any = null;
 
-              const aiData = aiResult.success && aiResult.data ? aiResult.data : null;
+              if (shouldRunAi) {
+                const aiResult = await enhanceRecWithAI({
+                  title: title || undefined,
+                  category: category.name,
+                  prompt:
+                    aiInstructions ||
+                    (!title
+                      ? "Identify the exact title with release year (YYYY) if media, and summarize details"
+                      : "Auto-format title with year (YYYY) if media"),
+                  rawInput: combinedInputText,
+                  images: finalImages,
+                });
+                if (aiResult.success && aiResult.data) {
+                  aiData = aiResult.data;
+                }
+              }
+
+              // Resolve Sub-Embed (Twitter / thread or web preview)
+              const urlToResolve =
+                aiData?.sourceUrl || (detectedUrls.length > 0 ? detectedUrls[0] : null);
+              let subEmbed: any = null;
+
+              if (urlToResolve) {
+                const subResult = await resolveSubEmbed(urlToResolve);
+                if (subResult.subEmbed) {
+                  subEmbed = subResult.subEmbed;
+                }
+                if (subResult.videoUrl && !finalVideoUrl) {
+                  finalVideoUrl = subResult.videoUrl;
+                }
+              }
+
+              const finalTitle = aiData?.title || title || "New Recommendation";
+              const finalDescription =
+                aiData?.description ||
+                description;
+              const finalNotes = notes || aiData?.personalNotes || "";
+              const finalChannel = channel || aiData?.channel || "";
 
               const recData = {
                 categoryId: category.id,
-                title: title || aiData?.title || "New Recommendation",
-                description: description || aiData?.description || "",
-                personalNotes: notes || aiData?.personalNotes || "",
+                title: finalTitle,
+                description: finalDescription,
+                personalNotes: finalNotes,
                 tags: tags || aiData?.tags || "",
                 platform: platform || aiData?.platform || "",
                 duration: duration || aiData?.duration || "",
                 creator: creator || aiData?.creator || "",
+                channel: finalChannel || undefined,
+                source: finalChannel || authorName,
                 images: finalImages,
-                source: authorName,
+                videoUrl: finalVideoUrl || undefined,
+                subEmbed: subEmbed || undefined,
               };
 
               const { embeds } = buildDiscordEmbeds(recData, category, activePersona, {
@@ -217,13 +273,18 @@ export async function POST(req: NextRequest) {
               });
 
               const patchUrl = `https://discord.com/api/v10/webhooks/${applicationId}/${token}/messages/@original`;
-              await fetch(patchUrl, {
+              const patchResponse = await fetch(patchUrl, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ embeds }),
+                body: JSON.stringify({
+                  content: finalVideoUrl || undefined,
+                  embeds,
+                  allowed_mentions: { parse: [] },
+                }),
               });
+              if (!patchResponse.ok) throw new Error(`Discord rejected recommendation (${patchResponse.status})`);
             } catch (err) {
-              console.error("AI enhancement in /rec failed:", err);
+              console.error("Background processing in /rec failed:", err);
               const fallbackRecData = {
                 categoryId: category.id,
                 title: title || "New Recommendation",
@@ -233,18 +294,25 @@ export async function POST(req: NextRequest) {
                 platform: platform || "",
                 duration: duration || "",
                 creator: creator || "",
+                channel: channel || undefined,
+                source: channel || authorName,
                 images: finalImages,
-                source: authorName,
+                videoUrl: finalVideoUrl || undefined,
               };
               const { embeds } = buildDiscordEmbeds(fallbackRecData, category, activePersona, {
                 isInteraction: true,
               });
               const patchUrl = `https://discord.com/api/v10/webhooks/${applicationId}/${token}/messages/@original`;
-              await fetch(patchUrl, {
+              const patchResponse = await fetch(patchUrl, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ embeds }),
+                body: JSON.stringify({
+                  content: finalVideoUrl || undefined,
+                  embeds,
+                  allowed_mentions: { parse: [] },
+                }),
               });
+              if (!patchResponse.ok) throw new Error(`Discord rejected recommendation (${patchResponse.status})`);
             }
           });
 
@@ -253,7 +321,7 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        // Standard instant response without AI
+        // Instant response when no AI or external URLs to resolve
         const recData = {
           categoryId: category.id,
           title: title || "New Recommendation",
@@ -263,16 +331,20 @@ export async function POST(req: NextRequest) {
           platform: platform || "",
           duration: duration || "",
           creator: creator || "",
+          channel: channel || undefined,
+          source: channel || authorName,
           images: finalImages,
-          source: authorName,
+          videoUrl: finalVideoUrl || undefined,
         };
 
-        const { embeds } = buildDiscordEmbeds(recData, category, activePersona, { isInteraction: true });
+        const { embeds } = buildDiscordEmbeds(recData, category, activePersona, {
+          isInteraction: true,
+        });
 
-        // Post embed directly to the server and channel where the command was called!
         return NextResponse.json({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
+            content: finalVideoUrl || undefined,
             embeds,
           },
         });
@@ -287,7 +359,20 @@ export async function POST(req: NextRequest) {
         if (targetMessage) {
           const rawContent = targetMessage.content || "";
           const attachments = targetMessage.attachments || [];
-          const imageUrls = attachments.map((att: { url: string }) => att.url);
+          const imageUrls: string[] = [];
+          let detectedVideoUrl = "";
+
+          for (const att of attachments) {
+            const isVideo =
+              att.content_type?.startsWith("video/") ||
+              /\.(mp4|webm|mov|mkv)$/i.test(att.filename || "") ||
+              /\.(mp4|webm|mov|mkv)$/i.test(att.url);
+            if (isVideo && !detectedVideoUrl) {
+              detectedVideoUrl = att.url;
+            } else if (!isVideo && att.url && att.content_type?.startsWith("image/")) {
+              imageUrls.push(att.url);
+            }
+          }
 
           const category = activeCategories[0] || DEFAULT_CATEGORIES[0];
           const authorName =
@@ -295,21 +380,92 @@ export async function POST(req: NextRequest) {
             targetMessage.author?.username ||
             "Discord";
 
-          const recData = {
-            categoryId: category.id,
-            title: rawContent.split("\n")[0]?.slice(0, 80) || "Recommendation",
-            description: rawContent,
-            images: imageUrls,
-            source: authorName,
-          };
+          const detectedUrls = extractUrls(rawContent);
+          const hasUrls = detectedUrls.length > 0;
 
-          const { embeds } = buildDiscordEmbeds(recData, category, activePersona, { isInteraction: true });
+          // Defer to resolve rich sub-embeds and AI title/description
+          const applicationId =
+            interaction.application_id || process.env.DISCORD_APPLICATION_ID;
+          const token = interaction.token;
+
+          after(async () => {
+            try {
+              let subEmbed: any = null;
+              if (hasUrls) {
+                const subRes = await resolveSubEmbed(detectedUrls[0]);
+                if (subRes.subEmbed) subEmbed = subRes.subEmbed;
+                if (subRes.videoUrl && !detectedVideoUrl) detectedVideoUrl = subRes.videoUrl;
+              }
+
+              const aiResult = await enhanceRecWithAI({
+                category: category.name,
+                prompt: "Auto-format title with year (YYYY) if media, and summarize details cleanly",
+                rawInput: rawContent,
+                images: imageUrls,
+              });
+
+              const aiData = aiResult.success && aiResult.data ? aiResult.data : null;
+
+              const recData = {
+                categoryId: category.id,
+                title: aiData?.title || rawContent.split("\n")[0]?.slice(0, 80) || "Recommendation",
+                description: aiData?.description || rawContent,
+                personalNotes: aiData?.personalNotes || "",
+                tags: aiData?.tags || "",
+                platform: aiData?.platform || "",
+                duration: aiData?.duration || "",
+                creator: aiData?.creator || "",
+                channel: aiData?.channel || undefined,
+                source: authorName,
+                images: imageUrls,
+                videoUrl: detectedVideoUrl || undefined,
+                subEmbed: subEmbed || undefined,
+              };
+
+              const { embeds } = buildDiscordEmbeds(recData, category, activePersona, {
+                isInteraction: true,
+              });
+
+              const patchUrl = `https://discord.com/api/v10/webhooks/${applicationId}/${token}/messages/@original`;
+              const patchResponse = await fetch(patchUrl, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  content: detectedVideoUrl || undefined,
+                  embeds,
+                  allowed_mentions: { parse: [] },
+                }),
+              });
+              if (!patchResponse.ok) throw new Error(`Discord rejected recommendation (${patchResponse.status})`);
+            } catch (err) {
+              console.error("Turn into Rec error:", err);
+              const fallbackRecData = {
+                categoryId: category.id,
+                title: rawContent.split("\n")[0]?.slice(0, 80) || "Recommendation",
+                description: rawContent,
+                images: imageUrls,
+                source: authorName,
+                videoUrl: detectedVideoUrl || undefined,
+              };
+              const { embeds } = buildDiscordEmbeds(fallbackRecData, category, activePersona, {
+                isInteraction: true,
+              });
+              const patchUrl = `https://discord.com/api/v10/webhooks/${applicationId}/${token}/messages/@original`;
+              const patchResponse = await fetch(patchUrl, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  content: detectedVideoUrl || undefined,
+                  embeds,
+                  allowed_mentions: { parse: [] },
+                }),
+              });
+              if (!patchResponse.ok) throw new Error(`Discord rejected recommendation (${patchResponse.status})`);
+            }
+          });
 
           return NextResponse.json({
-            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-            data: {
-              embeds,
-            },
+            type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
           });
         }
       }

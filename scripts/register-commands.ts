@@ -21,12 +21,6 @@ const commands = [
     contexts: [0, 1, 2], // 0 = GUILD, 1 = BOT_DM, 2 = PRIVATE_CHANNEL
     options: [
       {
-        name: "title",
-        description: "Title of the recommendation",
-        type: 3, // STRING
-        required: true,
-      },
-      {
         name: "category",
         description: "Recommendation category (live from your studio)",
         type: 3, // STRING
@@ -34,20 +28,32 @@ const commands = [
         autocomplete: true,
       },
       {
+        name: "title",
+        description: "Title (optional with AI/URL/image - AI will auto-format with year)",
+        type: 3, // STRING
+        required: false,
+      },
+      {
         name: "ai-instructions",
-        description: "✨ Ask Jasmine AI to auto-draft details (e.g. 'summarize why this is great')",
+        description: "✨ Ask Jasmine AI to auto-draft or refine (e.g. 'add year', 'summarize tweet')",
         type: 3, // STRING
         required: false,
       },
       {
         name: "description",
-        description: "Brief synopsis or overview of the work",
+        description: "Brief synopsis, tweet/URL thread, or overview",
         type: 3, // STRING
         required: false,
       },
       {
         name: "notes",
         description: "Personal thoughts, review, or quotes (rendered as quote)",
+        type: 3, // STRING
+        required: false,
+      },
+      {
+        name: "channel",
+        description: "Channel, shop, or advisor (e.g. @rafiqahakhdar on TikTok, Twitter)",
         type: 3, // STRING
         required: false,
       },
@@ -59,13 +65,13 @@ const commands = [
       },
       {
         name: "platform",
-        description: "Where to watch, read, or play (e.g. Netflix, Steam)",
+        description: "Where to watch, read, buy, or find (e.g. Netflix, Steam, Shopee)",
         type: 3, // STRING
         required: false,
       },
       {
         name: "duration",
-        description: "Duration, episodes, or chapters (e.g. 12 eps, 120 mins)",
+        description: "Duration, episodes, or price (e.g. 2h 20m, 12 eps, Php 105)",
         type: 3, // STRING
         required: false,
       },
@@ -102,6 +108,18 @@ const commands = [
       {
         name: "image_url",
         description: "Or paste image link(s) (supports space/comma separated URLs)",
+        type: 3, // STRING
+        required: false,
+      },
+      {
+        name: "video",
+        description: "Upload video file (mp4, webm, mov) to play inline",
+        type: 11, // ATTACHMENT
+        required: false,
+      },
+      {
+        name: "video_url",
+        description: "Direct video or clip URL (e.g. YouTube, TikTok, MP4)",
         type: 3, // STRING
         required: false,
       },

@@ -17,6 +17,9 @@ export interface RecFormData {
   duration?: string; // Duration / Pages / Episodes (e.g. "2h 20m", "320 pages")
   creator?: string; // Director / Author / Studio (e.g. "Dan Kwan, Daniel Scheinert")
   source?: string; // Footer source (e.g. "social media", "Rafa Ela", "Jizelle")
+  channel?: string; // Discovered channel, shop, or advisor (e.g. "@rafiqahakhdar on Tiktok", "Shopee")
+  videoUrl?: string; // Attached or linked playable video (mp4, webm, youtube, etc.)
+  subEmbed?: DiscordEmbed; // Optional 2nd embed for Twitter / linked thread
   images: string[]; // Up to 9 image URLs or Base64 / uploaded URLs
 }
 

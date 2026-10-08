@@ -68,6 +68,9 @@ export default function Home() {
     duration: "",
     creator: "",
     source: "",
+    channel: "",
+    videoUrl: "",
+    subEmbed: undefined,
     images: [],
   });
 
@@ -282,7 +285,7 @@ export default function Home() {
 
   // AI Auto-fill trigger
   const handleTriggerAi = async () => {
-    if (!formData.title && !formData.description && (!formData.images || formData.images.length === 0)) {
+    if (!formData.title && !formData.description && !formData.personalNotes && (!formData.images || formData.images.length === 0)) {
       alert("Please provide at least a title, notes, or an image for AI auto-fill.");
       return;
     }
@@ -312,6 +315,21 @@ export default function Home() {
       }
 
       const aiData = json.data;
+      let detectedSub = null;
+      let detectedVid = aiData.videoUrl || "";
+
+      if (aiData.sourceUrl) {
+        try {
+          const subRes = await fetch(`/api/subembed?url=${encodeURIComponent(aiData.sourceUrl)}`).then((r) => r.json());
+          if (subRes.success && subRes.subEmbed) {
+            detectedSub = subRes.subEmbed;
+            if (subRes.videoUrl && !detectedVid) detectedVid = subRes.videoUrl;
+          }
+        } catch {
+          // ignore subembed resolution error
+        }
+      }
+
       setFormData((prev) => ({
         ...prev,
         title: aiData.title || prev.title,
@@ -321,6 +339,9 @@ export default function Home() {
         duration: aiData.duration || prev.duration,
         creator: aiData.creator || prev.creator,
         personalNotes: aiData.personalNotes || prev.personalNotes,
+        channel: aiData.channel || prev.channel,
+        videoUrl: detectedVid || prev.videoUrl,
+        subEmbed: detectedSub || prev.subEmbed,
       }));
 
       setStatusMessage({
@@ -409,6 +430,8 @@ export default function Home() {
         duration: "",
         creator: "",
         images: [],
+        videoUrl: "",
+        subEmbed: undefined,
       }));
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -851,6 +874,39 @@ export default function Home() {
                     onChange={(e) => setFormData({ ...formData, creator: e.target.value })}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-pink-300"
                   />
+                </div>
+              </div>
+
+              {/* Field 3: Channel / Source & Video */}
+              <div className="space-y-3 p-4 rounded-2xl bg-slate-50/50 border border-slate-100 sm:col-span-2">
+                <span className="text-[11px] font-bold text-slate-500 uppercase">
+                  Field 3 (Channel / Source &amp; Video)
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                      Channel / Source thread
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="@rafiqahakhdar on TikTok, Twitter thread, Shopee..."
+                      value={formData.channel || ""}
+                      onChange={(e) => setFormData({ ...formData, channel: e.target.value })}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-pink-300"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                      Playable Video URL (mp4, YouTube, clip)
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://... (plays inline in Discord)"
+                      value={formData.videoUrl || ""}
+                      onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-pink-300"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

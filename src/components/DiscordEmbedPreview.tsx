@@ -106,11 +106,19 @@ export default function DiscordEmbedPreview({ data, category, persona }: Props) 
                   {(data.duration || data.creator) && (
                     <div className="space-y-0.5">
                       <div className="font-bold text-white leading-tight">
-                        {data.duration || "Duration"}
+                        {data.duration || "Duration / Details"}
                       </div>
                       <div className="text-[#b5bac1]">
                         {data.creator || "Creator / Author"}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Field 3: Channel / Shop */}
+                  {data.channel && data.channel !== data.platform && data.channel !== data.source && (
+                    <div className="space-y-0.5 sm:col-span-2">
+                      <div className="font-bold text-white leading-tight">Channel / Source</div>
+                      <div className="text-[#b5bac1]">{data.channel}</div>
                     </div>
                   )}
                 </div>
@@ -165,12 +173,86 @@ export default function DiscordEmbedPreview({ data, category, persona }: Props) 
                 <span>🌸</span>
               )}
               <span>
-                {data.source?.trim()
-                  ? `Rec by ${data.source.trim()}`
+                {data.source?.trim() || data.channel?.trim()
+                  ? `Rec by ${data.source?.trim() || data.channel?.trim()}`
                   : persona.footerText.replace("{source}", "Anonymous")}
               </span>
             </div>
           </div>
+
+          {/* Sub-Embed Preview (Twitter / X thread or URL card) */}
+          {data.subEmbed && (
+            <div
+              className="mt-2 rounded-lg bg-[#2b2d31] p-3.5 relative max-w-xl shadow-md border-l-[4px]"
+              style={{
+                borderLeftColor: data.subEmbed.color
+                  ? `#${data.subEmbed.color.toString(16).padStart(6, "0")}`
+                  : "#1da1f2",
+              }}
+            >
+              {data.subEmbed.author && (
+                <div className="flex items-center gap-2 mb-2 text-xs font-semibold text-white">
+                  {data.subEmbed.author.icon_url && (
+                    <img
+                      src={data.subEmbed.author.icon_url}
+                      alt={data.subEmbed.author.name}
+                      className="w-5 h-5 rounded-full object-cover"
+                    />
+                  )}
+                  <span>{data.subEmbed.author.name}</span>
+                </div>
+              )}
+
+              {data.subEmbed.title && (
+                <div className="text-[14px] font-bold text-white mb-1">
+                  {data.subEmbed.title}
+                </div>
+              )}
+
+              {data.subEmbed.description && (
+                <div className="text-[13px] text-[#dbdee1] whitespace-pre-wrap leading-relaxed">
+                  {data.subEmbed.description}
+                </div>
+              )}
+
+              {data.subEmbed.image?.url && (
+                <div className="mt-2.5 rounded-lg overflow-hidden max-h-64 bg-black/20">
+                  <img
+                    src={data.subEmbed.image.url}
+                    alt="Sub-embed media"
+                    className="w-full h-auto object-cover rounded-lg"
+                  />
+                </div>
+              )}
+
+              {data.subEmbed.footer && (
+                <div className="flex items-center gap-1.5 mt-2.5 text-[11px] text-[#949ba4]">
+                  {data.subEmbed.footer.icon_url && (
+                    <img
+                      src={data.subEmbed.footer.icon_url}
+                      alt="Sub-embed footer"
+                      className="w-3.5 h-3.5 rounded-full"
+                    />
+                  )}
+                  <span>{data.subEmbed.footer.text}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Inline Playable Video Preview */}
+          {data.videoUrl && (
+            <div className="mt-2 rounded-lg overflow-hidden max-w-xl bg-black/40 border border-slate-700 p-2 text-xs">
+              <div className="flex items-center gap-2 text-[#dbdee1] mb-1.5 font-medium">
+                <span className="text-red-400">▶</span> Playable Video Attachment:
+              </div>
+              <div className="text-[11px] text-blue-400 truncate hover:underline">
+                <a href={data.videoUrl} target="_blank" rel="noreferrer">
+                  {data.videoUrl}
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

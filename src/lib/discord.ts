@@ -130,8 +130,17 @@ export function buildDiscordEmbeds(
   // Field 2: Duration & Creator
   if (data.duration || data.creator) {
     fields.push({
-      name: sanitizeFieldName(data.duration, "Duration / Length"),
+      name: sanitizeFieldName(data.duration, "Duration / Details"),
       value: sanitizeFieldValue(data.creator, "Author / Director / Studio"),
+      inline: true,
+    });
+  }
+
+  // Field 3: Channel / Shop (if not redundant with platform or source)
+  if (data.channel && data.channel !== data.platform && data.channel !== data.source) {
+    fields.push({
+      name: "Channel / Source",
+      value: sanitizeFieldValue(data.channel, "Online"),
       inline: true,
     });
   }
@@ -148,8 +157,9 @@ export function buildDiscordEmbeds(
     title = title.slice(0, 250) + "...";
   }
 
-  let footerText = (data.source?.trim()
-    ? `Rec by ${data.source.trim()}`
+  const resolvedSource = data.source?.trim() || data.channel?.trim();
+  let footerText = (resolvedSource
+    ? `Rec by ${resolvedSource}`
     : persona.footerText.replace("{source}", "Anonymous")).trim();
   if (footerText.length > 2048) {
     footerText = footerText.slice(0, 2040) + "...";
@@ -204,6 +214,11 @@ export function buildDiscordEmbeds(
       url: sharedUrl,
       image: { url: resolvedImageUrls[i] },
     });
+  }
+
+  // Append rich sub-embed (Twitter / X thread, article, or linked card)
+  if (data.subEmbed) {
+    embeds.push(data.subEmbed);
   }
 
   return { embeds, fileAttachments };
