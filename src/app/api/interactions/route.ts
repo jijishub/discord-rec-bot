@@ -229,13 +229,6 @@ export async function POST(req: NextRequest) {
                   channel,
                   images: finalImages,
                 });
-                if (!aiResult.success && !title) {
-                  await fetch(`https://discord.com/api/v10/webhooks/${applicationId}/${token}/messages/@original`, {
-                    method: "PATCH", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ content: aiResult.error || "Please provide a title or clearer evidence.", embeds: [], allowed_mentions: { parse: [] } }),
-                  });
-                  return;
-                }
                 if (aiResult.success && aiResult.data) {
                   aiData = aiResult.data;
                 }
@@ -415,14 +408,7 @@ export async function POST(req: NextRequest) {
                 images: imageUrls,
               });
 
-              if (!aiResult.success) {
-                await fetch(`https://discord.com/api/v10/webhooks/${applicationId}/${token}/messages/@original`, {
-                  method: "PATCH", headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ content: aiResult.error || "Please provide a title or clearer evidence.", embeds: [], allowed_mentions: { parse: [] } }),
-                });
-                return;
-              }
-              const aiData = aiResult.data;
+              const aiData = aiResult.success ? aiResult.data : undefined;
 
               const recData = {
                 categoryId: category.id,
