@@ -10,6 +10,8 @@ import { buildDiscordEmbeds } from "@/lib/discord";
 import { enhanceRecWithAI } from "@/lib/ai";
 import { resolveSubEmbed, extractUrls } from "@/lib/url-metadata";
 
+export const maxDuration = 180;
+
 export async function POST(req: NextRequest) {
   try {
     const signature = req.headers.get("x-signature-ed25519");
@@ -223,8 +225,17 @@ export async function POST(req: NextRequest) {
                       ? "Identify the exact title with release year (YYYY) if media, and summarize details"
                       : "Auto-format title with year (YYYY) if media"),
                   rawInput: combinedInputText,
+                  personalNotes: notes,
+                  channel,
                   images: finalImages,
                 });
+                if (!aiResult.success && !title) {
+                  await fetch(`https://discord.com/api/v10/webhooks/${applicationId}/${token}/messages/@original`, {
+                    method: "PATCH", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ content: aiResult.error || "Please provide a title or clearer evidence.", embeds: [], allowed_mentions: { parse: [] } }),
+                  });
+                  return;
+                }
                 if (aiResult.success && aiResult.data) {
                   aiData = aiResult.data;
                 }
@@ -262,7 +273,7 @@ export async function POST(req: NextRequest) {
                 duration: duration || aiData?.duration || "",
                 creator: creator || aiData?.creator || "",
                 channel: finalChannel || undefined,
-                source: finalChannel || authorName,
+                source: authorName,
                 images: finalImages,
                 videoUrl: finalVideoUrl || undefined,
                 subEmbed: subEmbed || undefined,
@@ -295,7 +306,7 @@ export async function POST(req: NextRequest) {
                 duration: duration || "",
                 creator: creator || "",
                 channel: channel || undefined,
-                source: channel || authorName,
+                source: authorName,
                 images: finalImages,
                 videoUrl: finalVideoUrl || undefined,
               };
@@ -404,7 +415,14 @@ export async function POST(req: NextRequest) {
                 images: imageUrls,
               });
 
-              const aiData = aiResult.success && aiResult.data ? aiResult.data : null;
+              if (!aiResult.success) {
+                await fetch(`https://discord.com/api/v10/webhooks/${applicationId}/${token}/messages/@original`, {
+                  method: "PATCH", headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ content: aiResult.error || "Please provide a title or clearer evidence.", embeds: [], allowed_mentions: { parse: [] } }),
+                });
+                return;
+              }
+              const aiData = aiResult.data;
 
               const recData = {
                 categoryId: category.id,

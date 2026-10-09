@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enhanceRecWithAI, AIEnhanceRequest } from "@/lib/ai";
 
+// Identification and enrichment each have a 60-second request timeout.
+export const maxDuration = 180;
+
 export async function POST(req: NextRequest) {
   try {
     const body: AIEnhanceRequest = await req.json();

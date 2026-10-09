@@ -301,6 +301,8 @@ export default function Home() {
           title: formData.title,
           rawInput: `${formData.description}\n${formData.personalNotes}`,
           category: activeCategory.name,
+          personalNotes: formData.personalNotes,
+          channel: formData.channel,
           prompt: aiCustomInstruction,
           images: formData.images,
           model: aiSettings.model || serverConfig?.defaultModel || "gpt-5.6-luna",
