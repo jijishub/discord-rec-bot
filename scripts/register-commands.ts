@@ -53,7 +53,7 @@ const commands = [
       },
       {
         name: "channel",
-        description: "Channel, shop, or advisor (e.g. @rafiqahakhdar on TikTok, Twitter)",
+        description: "Channel, shop, or advisor (e.g. @username on TikTok, Twitter)",
         type: 3, // STRING
         required: false,
       },
