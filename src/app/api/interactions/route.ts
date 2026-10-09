@@ -165,30 +165,17 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // Match category from live active categories
-        let category = activeCategories.find(
-          (c) =>
-            c.id.toLowerCase() === categoryId ||
-            c.name.toLowerCase() === categoryId
+        // Only a configured category may be selected; never turn a title into a new category.
+        const category = activeCategories.find(
+          c => c.id.toLowerCase() === categoryId || c.name.toLowerCase() === categoryId
+        ) || DEFAULT_CATEGORIES.find(
+          c => c.id.toLowerCase() === categoryId || c.name.toLowerCase() === categoryId
         );
-
         if (!category) {
-          if (rawCategoryInput) {
-            const othersCat = activeCategories.find((c) => c.id === "others");
-            category = {
-              id: "custom",
-              name: rawCategoryInput,
-              emoji: othersCat?.emoji || "🍃",
-              color: othersCat?.color || "#bbf7d0",
-              iconUrl: othersCat?.iconUrl || "/others.png",
-            };
-          } else {
-            category =
-              activeCategories.find((c) => c.id === "movies") ||
-              activeCategories.find((c) => c.id === "others") ||
-              activeCategories[0] ||
-              DEFAULT_CATEGORIES[0];
-          }
+          return NextResponse.json({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: { content: "Please select a category from the category suggestions. Put the item name in title, or leave title empty for AI.", flags: 64 },
+          });
         }
 
         const authorName =
@@ -225,6 +212,7 @@ export async function POST(req: NextRequest) {
                       ? "Identify the exact title with release year (YYYY) if media, and summarize details"
                       : "Auto-format title with year (YYYY) if media"),
                   rawInput: combinedInputText,
+                  description, tags, platform, duration, creator,
                   personalNotes: notes,
                   channel,
                   images: finalImages,
@@ -249,22 +237,22 @@ export async function POST(req: NextRequest) {
                 }
               }
 
-              const finalTitle = aiData?.title || title || "New Recommendation";
+              const finalTitle = aiData?.title || title || `${category.name} recommendation`;
               const finalDescription =
-                aiData?.description ||
+                aiData?.description ??
                 description;
-              const finalNotes = notes || aiData?.personalNotes || "";
-              const finalChannel = channel || aiData?.channel || "";
+              const finalNotes = aiData?.personalNotes ?? notes;
+              const finalChannel = aiData?.channel ?? channel;
 
               const recData = {
                 categoryId: category.id,
                 title: finalTitle,
                 description: finalDescription,
                 personalNotes: finalNotes,
-                tags: tags || aiData?.tags || "",
-                platform: platform || aiData?.platform || "",
-                duration: duration || aiData?.duration || "",
-                creator: creator || aiData?.creator || "",
+                tags: aiData?.tags ?? tags,
+                platform: aiData?.platform ?? platform,
+                duration: aiData?.duration ?? duration,
+                creator: aiData?.creator ?? creator,
                 channel: finalChannel || undefined,
                 source: authorName,
                 images: finalImages,
@@ -291,7 +279,7 @@ export async function POST(req: NextRequest) {
               console.error("Background processing in /rec failed:", err);
               const fallbackRecData = {
                 categoryId: category.id,
-                title: title || "New Recommendation",
+                title: title || `${category.name} recommendation`,
                 description: description || "",
                 personalNotes: notes,
                 tags: tags || "",
@@ -328,7 +316,7 @@ export async function POST(req: NextRequest) {
         // Instant response when no AI or external URLs to resolve
         const recData = {
           categoryId: category.id,
-          title: title || "New Recommendation",
+          title: title || `${category.name} recommendation`,
           description: description || "",
           personalNotes: notes,
           tags: tags || "",
@@ -378,7 +366,10 @@ export async function POST(req: NextRequest) {
             }
           }
 
-          const category = activeCategories[0] || DEFAULT_CATEGORIES[0];
+          // Context menus have no selected category: preserve a source embed category, otherwise use Others.
+          const sourceCategoryName = targetMessage.embeds?.[0]?.author?.name?.replace(/^[^\p{L}\p{N}]+/u, "").trim().toLowerCase();
+          const category = activeCategories.find(c => c.name.toLowerCase() === sourceCategoryName) ||
+            activeCategories.find(c => c.id === "others" || c.name.toLowerCase() === "others") || DEFAULT_CATEGORIES.find(c => c.id === "others")!;
           const authorName =
             targetMessage.author?.global_name ||
             targetMessage.author?.username ||
@@ -413,13 +404,13 @@ export async function POST(req: NextRequest) {
               const recData = {
                 categoryId: category.id,
                 title: aiData?.title || rawContent.split("\n")[0]?.slice(0, 80) || "Recommendation",
-                description: aiData?.description || rawContent,
-                personalNotes: aiData?.personalNotes || "",
-                tags: aiData?.tags || "",
-                platform: aiData?.platform || "",
-                duration: aiData?.duration || "",
-                creator: aiData?.creator || "",
-                channel: aiData?.channel || undefined,
+                description: aiData?.description ?? rawContent,
+                personalNotes: aiData?.personalNotes ?? "",
+                tags: aiData?.tags ?? "",
+                platform: aiData?.platform ?? "",
+                duration: aiData?.duration ?? "",
+                creator: aiData?.creator ?? "",
+                channel: aiData?.channel ?? undefined,
                 source: authorName,
                 images: imageUrls,
                 videoUrl: detectedVideoUrl || undefined,

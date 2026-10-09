@@ -10,6 +10,7 @@ const originalFetch = globalThis.fetch;
 const originalKey = process.env.DISCORD_PUBLIC_KEY;
 const callbacks: (() => Promise<void>)[] = [];
 const patches: any[] = [];
+let lastAIRequest: any;
 let aiResult: any = { success: false, error: "I couldn't confidently identify the item in this category." };
 
 moduleLoader._load = function (id, ...args) {
@@ -22,7 +23,7 @@ moduleLoader._load = function (id, ...args) {
     getStoredCategories: async () => ({ categories: DEFAULT_CATEGORIES }),
     getStoredPersona: async () => ({ persona: DEFAULT_BOT_PERSONA }),
   };
-  if (id === '@/lib/ai') return { enhanceRecWithAI: async () => aiResult };
+  if (id === '@/lib/ai') return { enhanceRecWithAI: async (request: any) => { lastAIRequest = request; return aiResult; } };
   return originalLoad.call(this, id, ...args);
 };
 globalThis.fetch = async (url, init) => {
@@ -52,7 +53,7 @@ async function main() {
     const data = { name: 'rec', options: [{ name: 'category', value: anime.id }, { name: 'description', value: 'Saved from comments' },
       { name: 'notes', value: 'Want to watch' }, { name: 'tags', value: 'My tag' }], resolved: { attachments: { '1': attachment } } };
     const fallback = await send(data);
-    assert.equal(fallback.embeds[0].title, 'New Recommendation');
+    assert.equal(fallback.embeds[0].title, 'Anime recommendation');
     assert.equal(fallback.embeds[0].author.name, 'Anime');
     assert.equal(fallback.embeds[0].image.url, screenshot);
     assert.equal(fallback.embeds[0].description, 'Saved from comments\n\n> Want to watch');
@@ -66,11 +67,22 @@ async function main() {
     } } });
     assert.equal(context.embeds[0].image.url, screenshot);
     assert.equal(context.embeds[0].title, 'Recommendation');
+    assert.equal(context.embeds[0].author.name, 'Others', 'Context menu must not silently choose Movies');
 
-    aiResult = { success: true, data: { title: 'Identified Anime (2019)', description: 'A synopsis' } };
+    aiResult = { success: true, data: { title: 'Identified Anime (2019)', description: 'A synopsis', tags: 'Comedy, Sports', platform: 'Crunchyroll', duration: '12 eps', creator: 'Doga Kobo', category: 'Products' } };
     const identified = await send(data);
     assert.equal(identified.embeds[0].title, 'Identified Anime (2019)');
     assert.equal(identified.embeds[0].image.url, screenshot);
+    assert.equal(identified.embeds[0].author.name, 'Anime', 'AI must never override the selected category');
+    assert.equal(identified.embeds[0].fields[0].name, 'Comedy, Sports', 'AI must review existing tags');
+    assert.equal(identified.embeds[0].fields[1].name, '12 eps');
+    assert.equal(lastAIRequest.tags, 'My tag');
+    assert.equal(lastAIRequest.description, 'Saved from comments');
+    const invalid = await POST({ headers: new Headers({ 'x-signature-ed25519': 'test', 'x-signature-timestamp': 'test' }),
+      text: async () => JSON.stringify({ type: InteractionType.APPLICATION_COMMAND, data: { name: 'rec', options: [{ name: 'category', value: 'Some item title' }] } }) });
+    const invalidBody = await invalid.json();
+    assert.equal(invalidBody.data.flags, 64);
+    assert.equal(callbacks.length, 0, 'Invalid category must not become a custom category');
     console.log('Interaction fallback regression checks passed');
   } finally {
     moduleLoader._load = originalLoad;

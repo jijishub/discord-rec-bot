@@ -13,7 +13,7 @@ function isPublicAddress(address: string): boolean {
     !(a === 192 && b === 168) && !(a === 100 && b >= 64 && b <= 127) && a < 224;
 }
 
-async function fetchPublicPage(input: string): Promise<Response> {
+export async function fetchPublicResource(input: string): Promise<Response> {
   let url = new URL(input);
   for (let redirects = 0; redirects <= 3; redirects++) {
     if (!["http:", "https:"].includes(url.protocol) || url.username || url.password ||
@@ -25,7 +25,7 @@ async function fetchPublicPage(input: string): Promise<Response> {
     }
     const response = await fetch(url, {
       redirect: "manual", signal: AbortSignal.timeout(2500),
-      headers: { Accept: "text/html,application/xhtml+xml", "User-Agent": "JasmineDiscordBot/1.0" },
+      headers: { Accept: "*/*", "User-Agent": "JasmineDiscordBot/1.0" },
     });
     if (response.status >= 300 && response.status < 400) {
       await response.body?.cancel();
@@ -129,7 +129,7 @@ export async function fetchTwitterSubEmbed(
 export async function fetchGenericUrlSubEmbed(url: string): Promise<DiscordEmbed | null> {
   try {
     const parsedUrl = new URL(url);
-    const res = await fetchPublicPage(url);
+    const res = await fetchPublicResource(url);
 
     if (!res.ok) return null;
     if (!res.headers.get("content-type")?.includes("text/html")) {
