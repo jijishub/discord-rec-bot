@@ -1,5 +1,6 @@
 import { Category, RecFormData, BotPersona, DiscordEmbed, DiscordWebhookPayload } from "@/types";
 import { DEFAULT_CATEGORIES } from "@/lib/categories";
+import { buildRecFields } from "@/lib/rec-fields";
 
 export function hexToDecimal(hex: string): number {
   const cleanHex = hex.replace("#", "");
@@ -27,32 +28,6 @@ function parseBase64DataUrl(dataUrl: string): { blob: Blob; filename: string } |
   } catch {
     return null;
   }
-}
-
-function sanitizeFieldName(raw: string | undefined | null, fallback: string): string {
-  if (!raw) return fallback;
-  // Discord strictly rejects masked links [text](url) in field.name
-  let cleaned = raw.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
-  // Strip raw URLs from field names as Discord rejects links in names
-  cleaned = cleaned.replace(/https?:\/\/\S+/gi, "").trim();
-  // Strip dangling empty parens left behind by citations: ()
-  cleaned = cleaned.replace(/\(\s*\)/g, "").trim();
-  cleaned = cleaned.replace(/\s+/g, " ").trim();
-  if (!cleaned) return fallback;
-  if (cleaned.length > 256) {
-    return cleaned.slice(0, 250) + "...";
-  }
-  return cleaned;
-}
-
-function sanitizeFieldValue(raw: string | undefined | null, fallback: string): string {
-  if (!raw) return fallback;
-  let cleaned = raw.trim();
-  if (!cleaned) return fallback;
-  if (cleaned.length > 1024) {
-    return cleaned.slice(0, 1020) + "...";
-  }
-  return cleaned;
 }
 
 export function buildDiscordEmbeds(
@@ -115,35 +90,7 @@ export function buildDiscordEmbeds(
     descriptionParts.push(formattedNotes);
   }
 
-  // Build metadata fields with strict Discord validation
-  const fields = [];
-
-  // Field 1: Tags & Platform
-  if (data.tags || data.platform) {
-    fields.push({
-      name: sanitizeFieldName(data.tags, "Tags / Genres"),
-      value: sanitizeFieldValue(data.platform, "Available everywhere"),
-      inline: true,
-    });
-  }
-
-  // Field 2: Duration & Creator
-  if (data.duration || data.creator) {
-    fields.push({
-      name: sanitizeFieldName(data.duration, "Duration / Details"),
-      value: sanitizeFieldValue(data.creator, "Author / Director / Studio"),
-      inline: true,
-    });
-  }
-
-  // Field 3: Channel / Shop (if not redundant with platform or source)
-  if (data.channel && data.channel !== data.platform && data.channel !== data.source) {
-    fields.push({
-      name: "Channel / Source",
-      value: sanitizeFieldValue(data.channel, "Online"),
-      inline: true,
-    });
-  }
+  const fields = buildRecFields(data, category);
 
   const sharedUrl = "https://rec.jizellecasia.site";
 

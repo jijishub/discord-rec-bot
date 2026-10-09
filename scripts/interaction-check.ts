@@ -57,7 +57,8 @@ async function main() {
     assert.equal(fallback.embeds[0].author.name, 'Anime');
     assert.equal(fallback.embeds[0].image.url, screenshot);
     assert.equal(fallback.embeds[0].description, 'Saved from comments\n\n> Want to watch');
-    assert.equal(fallback.embeds[0].fields[0].name, 'My tag');
+    assert.equal(fallback.embeds[0].fields[0].name, 'Genres');
+    assert.equal(fallback.embeds[0].fields[0].value, 'My tag');
     assert.equal(fallback.embeds[0].footer.text, 'Rec by Jiji');
     assert.ok(!fallback.content, 'Identification error must not replace the embed');
     assert.ok(!JSON.stringify(fallback).includes('Frieren'));
@@ -74,8 +75,9 @@ async function main() {
     assert.equal(identified.embeds[0].title, 'Identified Anime (2019)');
     assert.equal(identified.embeds[0].image.url, screenshot);
     assert.equal(identified.embeds[0].author.name, 'Anime', 'AI must never override the selected category');
-    assert.equal(identified.embeds[0].fields[0].name, 'Comedy, Sports', 'AI must review existing tags');
-    assert.equal(identified.embeds[0].fields[1].name, '12 eps');
+    assert.equal(identified.embeds[0].fields[0].value, 'Comedy, Sports', 'AI must review existing tags');
+    assert.equal(identified.embeds[0].fields[2].name, 'Episodes / Runtime');
+    assert.equal(identified.embeds[0].fields[2].value, '12 eps');
     assert.equal(lastAIRequest.tags, 'My tag');
     assert.equal(lastAIRequest.description, 'Saved from comments');
     const invalid = await POST({ headers: new Headers({ 'x-signature-ed25519': 'test', 'x-signature-timestamp': 'test' }),

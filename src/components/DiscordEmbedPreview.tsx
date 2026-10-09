@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { buildRecFields } from "@/lib/rec-fields";
 import { Category, RecFormData, BotPersona } from "@/types";
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function DiscordEmbedPreview({ data, category, persona }: Props) {
+  const fields = buildRecFields(data, category);
   const images = (data.images || []).filter((img) => img && img.trim().length > 0);
   const embedColor = data.customColor || category.color || "#7983d4";
 
@@ -88,39 +90,14 @@ export default function DiscordEmbedPreview({ data, category, persona }: Props) 
               )}
 
               {/* Inline Metadata Fields */}
-              {(data.tags || data.platform || data.duration || data.creator) && (
+              {fields.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-[13px]">
-                  {/* Field 1 */}
-                  {(data.tags || data.platform) && (
-                    <div className="space-y-0.5">
-                      <div className="font-bold text-white leading-tight">
-                        {data.tags || "Tags"}
-                      </div>
-                      <div className="text-[#b5bac1]">
-                        {data.platform || "Platform"}
-                      </div>
+                  {fields.map((field) => (
+                    <div key={field.name} className="space-y-0.5">
+                      <div className="font-bold text-white leading-tight">{field.name}</div>
+                      <div className="text-[#b5bac1] whitespace-pre-wrap">{field.value}</div>
                     </div>
-                  )}
-
-                  {/* Field 2 */}
-                  {(data.duration || data.creator) && (
-                    <div className="space-y-0.5">
-                      <div className="font-bold text-white leading-tight">
-                        {data.duration || "Duration / Details"}
-                      </div>
-                      <div className="text-[#b5bac1]">
-                        {data.creator || "Creator / Author"}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Field 3: Channel / Shop */}
-                  {data.channel && data.channel !== data.platform && data.channel !== data.source && (
-                    <div className="space-y-0.5 sm:col-span-2">
-                      <div className="font-bold text-white leading-tight">Channel / Source</div>
-                      <div className="text-[#b5bac1]">{data.channel}</div>
-                    </div>
-                  )}
+                  ))}
                 </div>
               )}
             </div>
