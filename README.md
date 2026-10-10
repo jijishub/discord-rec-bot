@@ -1,6 +1,6 @@
 # ୨୧ Jasmine ┆ Discord Recommendation Studio 🌸🧋
 
-> **🌸 Meet Jasmine: turn titles, screenshots, and links into pretty Discord recommendations for anime, books, movies, and more—with AI-assisted summaries and your personal notes.**
+ **🌸 Meet Jasmine: turn titles, screenshots, and links into pretty Discord recommendations for anime, books, movies, and more—with AI-assisted summaries and your personal notes.**
 
 > 🍡 **Palette & Mood**: Baby pink (`#fce7f3`), Ayato pastel blue (`#c0c8ff`), Ayato's milktea boba (`#ffd2af`), Dango mochi (`#9cf8b5`), and Japanese sakura blossoms 🌸🧋
 
