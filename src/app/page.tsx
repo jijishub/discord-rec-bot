@@ -37,6 +37,7 @@ export default function Home() {
     hasAi: boolean;
     hasRedis?: boolean;
     defaultModel: string;
+    models?: string[];
     defaultPersona?: BotPersona;
     recipientName?: string;
     repoUrl?: string;
@@ -283,6 +284,8 @@ export default function Home() {
     }));
   };
 
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+
   // AI Auto-fill trigger
   const handleTriggerAi = async () => {
     if (!formData.title && !formData.description && !formData.personalNotes && (!formData.images || formData.images.length === 0)) {
@@ -392,18 +395,20 @@ export default function Home() {
     setStatusMessage(null);
 
     try {
+      const submission = {
+        data: { ...formData, categoryId: activeCategory.id },
+        category: activeCategory, persona,
+        webhookUrl: destinationMode === 'custom' && webhookUrl.trim() ? webhookUrl.trim() : undefined,
+      };
+      const upload = new FormData();
+      if (videoFile) {
+        upload.append('payload', JSON.stringify(submission));
+        upload.append('video', videoFile);
+      }
       const res = await fetch("/api/webhook/send", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          data: {
-            ...formData,
-            categoryId: activeCategory.id,
-          },
-          category: activeCategory,
-          persona: persona,
-          webhookUrl: destinationMode === "custom" && webhookUrl.trim() ? webhookUrl.trim() : undefined,
-        }),
+        headers: videoFile ? undefined : { "Content-Type": "application/json" },
+        body: videoFile ? upload : JSON.stringify(submission),
       });
 
       let json: { success?: boolean; error?: string; message?: string } | null = null;
@@ -427,6 +432,7 @@ export default function Home() {
       });
 
       // Clear non-essential fields after posting
+      setVideoFile(null);
       setFormData((prev) => ({
         ...prev,
         title: "",
@@ -913,6 +919,21 @@ export default function Home() {
                       onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
                       className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-pink-300"
                     />
+                    <label className="mt-2 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-pink-50 px-3 py-2 text-xs text-pink-600">
+                      <UploadCloud className="h-3.5 w-3.5" /> Upload Video
+                      <input type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden" onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        event.target.value = '';
+                        if (!file) return;
+                        if (file.size > 3 * 1024 * 1024) {
+                          setStatusMessage({ type: 'error', text: 'Please upload a video under 3 MB, or paste a video URL for a larger clip.' });
+                          return;
+                        }
+                        setVideoFile(file);
+                      }} />
+                    </label>
+                    {videoFile && <div className="mt-1 text-xs text-slate-500">{videoFile.name} <button type="button" className="text-pink-500" onClick={() => setVideoFile(null)}>Remove</button></div>}
+                    <p className="mt-1 text-[11px] text-slate-400">MP4, WebM or MOV up to 3 MB. Use a URL for larger clips.</p>
                   </div>
                 </div>
               </div>

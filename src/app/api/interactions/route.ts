@@ -219,6 +219,12 @@ export async function POST(req: NextRequest) {
                 });
                 if (aiResult.success && aiResult.data) {
                   aiData = aiResult.data;
+                } else if (!title && !description && !finalImages.length) {
+                  await fetch(`https://discord.com/api/v10/webhooks/${applicationId}/${token}/messages/@original`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: `Jasmine could not complete this request: ${aiResult.error || 'AI generation failed.'} Please try again.`, embeds: [], allowed_mentions: { parse: [] } }),
+                  });
+                  return;
                 }
               }
 

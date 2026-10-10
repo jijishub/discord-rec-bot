@@ -77,6 +77,10 @@ async function main() {
     outputs = [complete, complete];
     const incompleteList = await enhanceRecWithAI({ ...req, prompt: 'suggest five anime' });
     assert.equal(incompleteList.success, false, 'Never silently return one item when five were requested');
+    outputs = [{ ...complete, title: 'Six anime for a light watch', recommendations: [...recommendations, { title: 'Anime 6 (2021)', description: 'A gentle historical fantasy.' }] }];
+    const six = await enhanceRecWithAI({ ...req, prompt: 'suggest me 6 animes in netflix to watch next when i love apothecary diaries, frieren, black butler, tian guan ci fu/mdxs/scum villain, and jujutsu kaisen. do not suggest ghibli films. i am in the mood for period piece and light watch like apothecary diaries and frieren.' });
+    assert.equal(six.success, true);
+    assert.ok(six.data.description.includes('6. **Anime 6'));
     const count = requests.length;
     assert.equal((await enhanceRecWithAI({ ...req, category: '' })).success, false);
     assert.equal(requests.length, count);

@@ -22,16 +22,10 @@ interface Props {
     hasAi: boolean;
     hasRedis?: boolean;
     defaultModel: string;
+    models?: string[];
     defaultPersona?: BotPersona;
   };
 }
-
-const COMMON_MODELS = [
-  "gpt-5.6-luna",
-  "gemini-1.5-pro",
-  "gemini-2.0-flash-exp",
-  "deepseek/deepseek-chat:free",
-];
 
 export default function SettingsModal({
   isOpen,
@@ -206,12 +200,12 @@ export default function SettingsModal({
                   type="text"
                   value={aiModel}
                   onChange={(e) => setAiModel(e.target.value)}
-                  placeholder="e.g. gpt-5.6-luna, gemini-1.5-pro"
+                  placeholder={serverConfig?.defaultModel || 'Model ID from your AI provider'}
                   className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-pink-300 font-mono"
                 />
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <span className="text-[11px] text-slate-400 mr-1 self-center">Quick pick:</span>
-                  {COMMON_MODELS.map((m) => (
+                  {(serverConfig?.models || [serverConfig?.defaultModel || 'gpt-5.6-luna']).map((m) => (
                     <button
                       key={m}
                       type="button"

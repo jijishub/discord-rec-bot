@@ -50,6 +50,9 @@ async function main() {
     }
     const anime = DEFAULT_CATEGORIES.find(c => c.name === 'Anime')!;
     assert.ok(anime);
+    const failedList = await send({ name: 'rec', options: [{ name: 'category', value: anime.id }, { name: 'ai-instructions', value: 'suggest me 6 animes in netflix' }] });
+    assert.equal(failedList.embeds.length, 0, 'Failed AI-only requests must not post an empty recommendation card');
+    assert.ok(failedList.content.includes(aiResult.error));
     const data = { name: 'rec', options: [{ name: 'category', value: anime.id }, { name: 'description', value: 'Saved from comments' },
       { name: 'notes', value: 'Want to watch' }, { name: 'tags', value: 'My tag' }], resolved: { attachments: { '1': attachment } } };
     const fallback = await send(data);

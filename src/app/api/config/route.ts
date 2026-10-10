@@ -6,6 +6,20 @@ export async function GET() {
   const hasAi = !!process.env.AI_API_BASE_URL;
   const hasRedis = !!getRedis();
   const defaultModel = process.env.AI_DEFAULT_MODEL || "gpt-5.6-luna";
+  let models = (process.env.AI_MODELS || '').split(',').map(model => model.trim()).filter(Boolean);
+  if (!models.length && process.env.AI_API_BASE_URL) {
+    try {
+      const response = await fetch(process.env.AI_API_BASE_URL.replace(/\/+$/, '') + '/models', {
+        headers: { Authorization: `Bearer ${process.env.AI_API_KEY || 'dummy'}` },
+        signal: AbortSignal.timeout(3000), next: { revalidate: 300 },
+      });
+      if (response.ok) {
+        const result = await response.json();
+        models = Array.isArray(result.data) ? result.data.flatMap((model: { id?: unknown }) =>
+          typeof model?.id === 'string' ? [model.id] : []) : [];
+      }
+    } catch { /* Default model remains available if model discovery is unsupported. */ }
+  }
 
   const defaultPersona = {
     username: process.env.BOT_USERNAME || "Jasmine 🌸",
@@ -23,6 +37,7 @@ export async function GET() {
     hasAi,
     hasRedis,
     defaultModel,
+    models: Array.from(new Set([defaultModel, ...models])),
     defaultPersona,
     recipientName,
     repoUrl,

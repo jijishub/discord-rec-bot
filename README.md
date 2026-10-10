@@ -48,6 +48,7 @@ Use the `/rec` slash command anywhere Jasmine is installed:
 - **Optional Title**: Supply the item name, or leave it empty for AI to draft from your input. AI also runs when you provide `ai-instructions`.
 - **Optional Fields**: `ai-instructions`, `description` (synopsis or recommendation links), `notes` (your personal thoughts, displayed as a quote), `tags`, `platform`, `duration`, `creator`, and `channel` (discovery account or shop).
 - **Images & Video**: Up to 4 direct image attachments (`image`, `image_2`, `image_3`, `image_4`), additional links through `image_url`, and a video attachment or `video_url`. Image galleries support up to 9 images.
+- **Web Video Upload**: Both the public studio and admin view accept an MP4, WebM or MOV file up to 3 MB, posted as a Discord attachment. Use a video URL for larger clips.
 - **Message Context Menu**: Right-click any message in Discord &rarr; `Apps` &rarr; `Turn into Rec` to convert chat messages into recommendation cards.
 
 For a list in one embed:
@@ -103,6 +104,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 AI_API_BASE_URL=https://your-ai-endpoint.example/v1
 AI_API_KEY=your_key_here
 AI_DEFAULT_MODEL=gpt-5.6-luna
+# Optional: comma-separated model IDs to show as quick picks
+# Leave empty to discover models from your configured provider's /models endpoint
+AI_MODELS=
 
 # Upstash Redis (Optional - for cross-device cloud persistence)
 UPSTASH_REDIS_REST_URL=https://your-database.upstash.io
@@ -157,3 +161,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## ୨୧ License
 
 MIT License. Designed with care for aesthetic Discord curation 🌸🧋🍡
+
+# Future Pipeline
+
+```
+1. End users must be able to modify embed icons and category labels based on their personal aesthetics and preferences. JSON import/export backup.
+```

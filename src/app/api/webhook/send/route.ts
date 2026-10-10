@@ -6,7 +6,13 @@ import { resolveSubEmbed } from "@/lib/url-metadata";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const multipart = req.headers.get('content-type')?.startsWith('multipart/form-data');
+    const upload = multipart ? await req.formData() : undefined;
+    const body = upload ? JSON.parse(String(upload.get('payload'))) : await req.json();
+    const video = upload?.get('video');
+    if (video instanceof File && (video.size > 3 * 1024 * 1024 || !['video/mp4', 'video/webm', 'video/quicktime'].includes(video.type))) {
+      return NextResponse.json({ error: 'Upload an MP4, WebM or MOV video under 3 MB, or use a video URL.' }, { status: 400 });
+    }
     const {
       data,
       formData,
@@ -43,6 +49,7 @@ export async function POST(req: NextRequest) {
       if (linked.videoUrl && !recData.videoUrl) recData.videoUrl = linked.videoUrl;
     }
     const { embeds, fileAttachments } = buildDiscordEmbeds(recData, category, persona);
+    if (video instanceof File && video.size) fileAttachments.push({ blob: video, filename: video.name });
 
     let avatarUrl = persona.avatarUrl || process.env.BOT_AVATAR_URL || "/maomao.png";
     if (avatarUrl && avatarUrl.startsWith("/")) {
