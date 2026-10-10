@@ -219,10 +219,10 @@ export async function POST(req: NextRequest) {
                 });
                 if (aiResult.success && aiResult.data) {
                   aiData = aiResult.data;
-                } else if (!title && !description && !finalImages.length) {
+                } else if (aiResult.disposition || (!title && !description && !finalImages.length)) {
                   await fetch(`https://discord.com/api/v10/webhooks/${applicationId}/${token}/messages/@original`, {
                     method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: `Jasmine could not complete this request: ${aiResult.error || 'AI generation failed.'} Please try again.`, embeds: [], allowed_mentions: { parse: [] } }),
+                    body: JSON.stringify({ content: aiResult.disposition ? aiResult.error : `Jasmine could not complete this request: ${aiResult.error || 'AI generation failed.'} Please try again.`, embeds: [], allowed_mentions: { parse: [] } }),
                   });
                   return;
                 }
@@ -406,6 +406,13 @@ export async function POST(req: NextRequest) {
               });
 
               const aiData = aiResult.success ? aiResult.data : undefined;
+              if (aiResult.disposition) {
+                await fetch(`https://discord.com/api/v10/webhooks/${applicationId}/${token}/messages/@original`, {
+                  method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ content: aiResult.error, embeds: [], allowed_mentions: { parse: [] } }),
+                });
+                return;
+              }
 
               const recData = {
                 categoryId: category.id,

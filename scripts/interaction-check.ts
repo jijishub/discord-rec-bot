@@ -53,6 +53,11 @@ async function main() {
     const failedList = await send({ name: 'rec', options: [{ name: 'category', value: anime.id }, { name: 'ai-instructions', value: 'suggest me 6 animes in netflix' }] });
     assert.equal(failedList.embeds.length, 0, 'Failed AI-only requests must not post an empty recommendation card');
     assert.ok(failedList.content.includes(aiResult.error));
+    aiResult = { success: false, disposition: 'reject', error: 'I can help with recommendations.' };
+    const rejected = await send({ name: 'rec', options: [{ name: 'category', value: anime.id }, { name: 'description', value: 'make me a PDF' }, { name: 'ai', value: true }] });
+    assert.equal(rejected.embeds.length, 0, 'Rejected input must not become a fallback card');
+    assert.equal(rejected.content, aiResult.error);
+    aiResult = { success: false, error: "I couldn't confidently identify the item in this category." };
     const data = { name: 'rec', options: [{ name: 'category', value: anime.id }, { name: 'description', value: 'Saved from comments' },
       { name: 'notes', value: 'Want to watch' }, { name: 'tags', value: 'My tag' }], resolved: { attachments: { '1': attachment } } };
     const fallback = await send(data);
