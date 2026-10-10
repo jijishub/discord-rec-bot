@@ -8,7 +8,7 @@ Zero external dependencies required on Node 18+ (uses native Node WebSocket).
 
 ---
 
-## ✿ Quick Setup on Google Cloud (Alongside `your-ai-endpoint.example`)
+## ✿ Quick Setup on Your Server
 
 ### Method 1: If using PM2 (Most Common on Compute Engine / VM)
 1. Copy `bot.js` to your server.

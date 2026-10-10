@@ -116,7 +116,7 @@ This step enables in-chat slash commands (`/rec`) and message context menus (`Ap
 | `BOT_AVATAR_URL` | *(Optional)* Default avatar image | `/maomao.png` |
 | `AI_API_BASE_URL` | *(Optional)* Reverse proxy URL | `https://your-reverse-proxy.site/v1` |
 | `AI_API_KEY` | *(Optional)* Reverse proxy token | `your_token` |
-| `AI_DEFAULT_MODEL` | *(Optional)* Default AI model | `gemini-1.5-pro` or `gpt-5.6-luna` |
+| `AI_DEFAULT_MODEL` | *(Optional)* Default AI model | A model ID supported by your endpoint |
 | `UPSTASH_REDIS_REST_URL` | *(Optional)* Auto-linked via Vercel Storage | `https://...upstash.io` |
 | `UPSTASH_REDIS_REST_TOKEN` | *(Optional)* Auto-linked via Vercel Storage | `your_token` |
 
@@ -193,6 +193,7 @@ If you want one-click AI auto-filling:
 3. Enter:
    - **Reverse Proxy API Base URL**: e.g. `https://your-proxy-domain.com/v1`
    - **API Key**: Your reverse proxy bearer token.
+   - **Model Name**: A model ID supported by your configured endpoint. Quick picks use the endpoint's model list, or your `AI_MODELS` setting.
 4. Click **Save Settings**.
 5. When writing a recommendation, toggle **🌸 Auto-Fill with AI** &rarr; click **Organize with AI 🌸**. Jasmine will parse your notes and extract tags, runtime, creators, and platform automatically!
 
@@ -234,4 +235,4 @@ If you want one-click AI auto-filling:
 - Yes! Default is **`Jasmine 🌸`** and **`/maomao.png`**. You can configure server-wide defaults in `.env` / Vercel (`BOT_USERNAME` and `BOT_AVATAR_URL`), or customize it per-browser in **Settings ⚙️** &rarr; **Bot Persona**.
 
 #### Q: Do I need to pay anything?
-- **Zero dollars.** Vercel Hobby tier is free, Cloudflare DNS is free, Discord Webhooks & CDN are free, and your AI proxy models (`5.6-luna`, Gemini Pro) are free as stated in your context.
+- Hosting and AI costs depend on your providers, plans, and usage.
