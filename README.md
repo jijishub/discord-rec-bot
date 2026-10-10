@@ -164,9 +164,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 MIT License. Designed with care for aesthetic Discord curation 🌸🧋🍡
 
-## Future Pipeline
+## ୨୧ Future Pipeline
 
 ```
 1. End users must be able to modify embed icons and category labels based on their personal aesthetics and preferences. JSON import/export backup.
 2. Give Jasmine a persistent online status in Discord using a Gateway worker managed through Docker or PM2. Her commands already work 24/7; Vercel’s serverless hosting does not maintain the connection needed for the online indicator
+3. Listings on Top.gg and Discord’s App Directory, subject to verification and eligibility.
 ```
