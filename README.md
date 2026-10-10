@@ -1,6 +1,6 @@
 # ୨୧ Jasmine ┆ Discord Recommendation Studio 🌸🧋
 
-> **An aesthetic community curation studio for Discord. Create, format, and share recommendations for Anime, Manga, Novels, Movies, Games, and Cafés through pastel Discord embeds with AI-assisted drafting.**
+> **🌸 Meet Jasmine: turn titles, screenshots, and links into pretty Discord recommendations for anime, books, movies, and more—with AI-assisted summaries and your personal notes.**
 
 > 🍡 **Palette & Mood**: Baby pink (`#fce7f3`), Ayato pastel blue (`#c0c8ff`), Ayato's milktea boba (`#ffd2af`), Dango mochi (`#9cf8b5`), and Japanese sakura blossoms 🌸🧋
 
@@ -168,4 +168,5 @@ MIT License. Designed with care for aesthetic Discord curation 🌸🧋🍡
 
 ```
 1. End users must be able to modify embed icons and category labels based on their personal aesthetics and preferences. JSON import/export backup.
+2. Give Jasmine a persistent online status in Discord using a Gateway worker managed through Docker or PM2. Her commands already work 24/7; Vercel’s serverless hosting does not maintain the connection needed for the online indicator
 ```
