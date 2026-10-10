@@ -4,11 +4,9 @@ import crypto from "crypto";
 export const ADMIN_COOKIE_NAME = "jasmine_admin_session";
 
 function getSecretKey(): string {
-  return (
-    process.env.GOOGLE_CLIENT_SECRET ||
-    process.env.DISCORD_PUBLIC_KEY ||
-    ""
-  );
+  const secret = process.env.ADMIN_SESSION_SECRET || process.env.GOOGLE_CLIENT_SECRET;
+  if (!secret) throw new Error('Admin session signing secret is not configured.');
+  return secret;
 }
 
 export interface AdminSessionUser {
@@ -46,6 +44,7 @@ export function createAdminToken(user: { email: string; name?: string; picture?:
  */
 export function verifyAdminToken(token: string | undefined): AdminSessionUser | null {
   if (!token) return null;
+  if (!process.env.ADMIN_SESSION_SECRET && !process.env.GOOGLE_CLIENT_SECRET) return null;
   const parts = token.split(".");
   if (parts.length !== 2) return null;
 
@@ -57,7 +56,8 @@ export function verifyAdminToken(token: string | undefined): AdminSessionUser | 
     .update(payloadB64)
     .digest("base64url");
 
-  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+  if (Buffer.byteLength(signature) !== Buffer.byteLength(expectedSignature) ||
+      !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
     return null;
   }
 
@@ -70,7 +70,8 @@ export function verifyAdminToken(token: string | undefined): AdminSessionUser | 
       return null;
     }
 
-    return payload;
+    return payload.isAdmin === true && typeof payload.email === 'string' &&
+      typeof payload.exp === 'number' && isAuthorizedAdminEmail(payload.email) ? payload : null;
   } catch {
     return null;
   }
@@ -82,8 +83,7 @@ export function verifyAdminToken(token: string | undefined): AdminSessionUser | 
 export function isAuthorizedAdminEmail(email: string): boolean {
   const configuredAdmins = process.env.ADMIN_EMAIL || process.env.ADMIN_EMAILS;
   if (!configuredAdmins) {
-    // If ADMIN_EMAIL is not yet configured, allow the first authenticated user
-    return true;
+    return false;
   }
 
   const allowedList = configuredAdmins
