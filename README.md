@@ -15,7 +15,7 @@
 ## 🌸 Quick Links
 
 - 🌐 **Live Web Studio**: [rec.jizellecasia.site](https://rec.jizellecasia.site)
-- 🤖 **Add Jasmine to Discord**: [Universal Bot Invite Link](https://discord.com/oauth2/authorize?client_id=1557445475685113886)
+- 🌸 **Add Jasmine to Discord**: [Universal Bot Invite Link](https://discord.com/oauth2/authorize?client_id=1557445475685113886)
   - **Guild Install**: Add Jasmine to your Discord server channels.
   - **User Install**: Add Jasmine to your personal Discord account to use `/rec` anywhere.
 
@@ -48,7 +48,7 @@ Use the `/rec` slash command anywhere Jasmine is installed:
 
 ---
 
-## 🚀 Quick Start (Local Setup)
+## Quick Start (Local Setup)
 
 ### 1. Clone & Install
 ```bash

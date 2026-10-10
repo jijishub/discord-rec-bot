@@ -101,6 +101,7 @@ export async function fetchTwitterSubEmbed(
     const retweets = tweet.retweets ? tweet.retweets.toLocaleString() : "0";
 
     const subEmbed: DiscordEmbed = {
+      url,
       author: {
         name: `${tweet.author.name} (@${tweet.author.screen_name})`,
         icon_url: tweet.author.avatar_url,

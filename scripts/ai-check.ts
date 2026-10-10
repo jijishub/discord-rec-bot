@@ -54,6 +54,12 @@ async function main() {
     assert.equal(explicit.data.personalNotes, 'Want to try this');
     assert.equal(explicit.data.sourceUrl, 'https://example.test/post');
     assert.equal(explicit.data.tags, '', 'AI can clear an inappropriate field after review');
+    outputs = [{ ...complete, title: 'Book recommendation discussion', description: 'Readers discuss mysteries and psychological thrillers.' }];
+    const thread = await enhanceRecWithAI({ ...req, rawInput: 'Recommend this thread https://x.com/person/status/123', description: 'Also https://example.test/books' });
+    assert.ok(thread.data.description.includes('https://x.com/person/status/123'));
+    assert.ok(thread.data.description.includes('https://example.test/books'));
+    assert.equal(thread.data.sourceUrl, 'https://x.com/person/status/123');
+    assert.ok(requests.at(-1).messages[0].content.includes('do not choose a book/movie/product mentioned in it'));
     const count = requests.length;
     assert.equal((await enhanceRecWithAI({ ...req, category: '' })).success, false);
     assert.equal(requests.length, count);

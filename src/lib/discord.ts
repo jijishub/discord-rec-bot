@@ -77,6 +77,12 @@ export function buildDiscordEmbeds(
     descriptionParts.push(data.description.trim());
   }
 
+  // Keep a visible link even when the recommendation only supplied a preview.
+  const previewUrl = data.subEmbed?.url || data.subEmbed?.author?.url;
+  if (previewUrl && !data.description?.includes(previewUrl)) {
+    descriptionParts.push(previewUrl);
+  }
+
   if (data.personalNotes && data.personalNotes.trim()) {
     const formattedNotes = data.personalNotes
       .trim()

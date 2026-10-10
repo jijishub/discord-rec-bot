@@ -8,6 +8,9 @@ async function main() {
   assert.equal(result.embeds.length, 10);
   assert.equal(result.embeds[0].title, 'Film (2022)');
   assert.equal(result.embeds[9].title, 'Linked article');
+  const threadUrl = 'https://x.com/person/status/123';
+  const thread = buildDiscordEmbeds({ categoryId: 'movies', title: 'Discussion', description: 'A recommendation thread.', images: [], subEmbed: { url: threadUrl } }, DEFAULT_CATEGORIES[0], DEFAULT_BOT_PERSONA);
+  assert.ok(thread.embeds[0].description?.includes(threadUrl), 'Preview links must remain visible in the description');
   assert.equal(parseTwitterUrl('https://x.com/person/status/123')?.tweetId, '123');
   for (const url of ['http://127.0.0.1/private', 'http://169.254.169.254/', 'http://[::1]/']) {
     assert.equal((await resolveSubEmbed(url)).subEmbed, null);
