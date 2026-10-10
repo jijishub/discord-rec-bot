@@ -10,6 +10,8 @@
 [![Web Portal](https://img.shields.io/badge/Web_Portal-rec.jizellecasia.site-c0c8ff?style=for-the-badge&logo=vercel&logoColor=white)](https://rec.jizellecasia.site)
 [![License: MIT](https://img.shields.io/badge/License-MIT-fce7f3?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
+[![Jasmine Discord recommendation bot and example recommendation embeds](public/jasmine%20readme.png)](https://discord.com/oauth2/authorize?client_id=1557445475685113886)
+
 ---
 
 ## 🌸 Quick Links
