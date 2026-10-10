@@ -302,9 +302,20 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: formData.title,
-          categoryName: activeCategory.name,
-          customInstruction: aiCustomInstruction,
-          apiConfig: aiSettings.baseUrl ? aiSettings : undefined,
+          rawInput: `${formData.description}\n${formData.personalNotes}`,
+          category: activeCategory.name,
+          description: formData.description,
+          tags: formData.tags,
+          platform: formData.platform,
+          duration: formData.duration,
+          creator: formData.creator,
+          personalNotes: formData.personalNotes,
+          channel: formData.channel,
+          prompt: aiCustomInstruction,
+          images: formData.images,
+          model: aiSettings.model || serverConfig?.defaultModel || "gpt-5.6-luna",
+          apiKey: aiSettings.apiKey.trim() || undefined,
+          apiBaseUrl: aiSettings.baseUrl.trim() || undefined,
         }),
       });
 
@@ -313,16 +324,17 @@ export default function AdminPage() {
         throw new Error(data.error || "Failed to generate recommendation");
       }
 
-      const rec = data.recommendation;
+      const rec = data.data;
       setFormData((prev) => ({
         ...prev,
         title: rec.title || prev.title,
-        description: rec.description || prev.description,
-        personalNotes: prev.personalNotes || rec.personalNotes || "",
-        tags: rec.tags || prev.tags,
-        platform: rec.platform || prev.platform,
-        duration: rec.duration || prev.duration,
-        creator: rec.creator || prev.creator,
+        description: rec.description ?? prev.description,
+        personalNotes: rec.personalNotes ?? prev.personalNotes,
+        tags: rec.tags ?? prev.tags,
+        platform: rec.platform ?? prev.platform,
+        duration: rec.duration ?? prev.duration,
+        creator: rec.creator ?? prev.creator,
+        channel: rec.channel ?? prev.channel,
       }));
 
       setStatusMessage({
