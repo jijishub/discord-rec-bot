@@ -1,5 +1,6 @@
 import { extractImageText } from './image-text';
 import { extractUrls } from './url-metadata';
+import { plainLinks } from './plain-links';
 
 export interface AIEnhanceRequest {
   title?: string;
@@ -63,9 +64,7 @@ function parseResult(text: string): Record<string, unknown> {
 
 function clean(value: unknown, fallback = ''): string {
   if (typeof value !== 'string') return fallback;
-  return value.replace(/\s*\(\[[^\]]+\]\(https?:\/\/[^)]+\)\)/gi, '')
-    .replace(/\s*\[[^\]]+\]\(https?:\/\/[^)]*utm_source=[^)]*\)/gi, '')
-    .replace(/\s+/g, ' ').trim();
+  return plainLinks(value).replace(/\s+/g, ' ').trim();
 }
 
 function requestedRecommendationCount(req: AIEnhanceRequest): number | undefined {
@@ -93,6 +92,7 @@ Read all visible screenshot text first. Use captions, product model names and re
 A supplied title is an anchor; correct spelling or replace a generic heading with a more useful title based on the evidence. With no title, find it in the image or notes. Never copy a popular work from your own examples. If the exact identity is genuinely unavailable, write a specific descriptive title and summarize what is visible rather than 'New Recommendation'. Do not invent an identity or add facts for an unrelated work.
 For identified media include its release/publication year in parentheses when known for this exact medium. Use familiar factual knowledge to fill genres, creator/studio, episode count/runtime and appropriate platforms. Do not list discontinued services or promise current regional availability without evidence. For products extract model, brand, price, seller/group and key specifications. For food/apps/etc use suitable details. Leave a field empty only when inapplicable or genuinely unknown; never fill with fabricated specifics.
 Keep the description concise, helpful and spoiler-free. Distinguish seller claims from facts you verified. Preserve user intent and relevant details.
+Use bare URLs in descriptions and personal notes, never Markdown links such as [label](url). Copy supplied URLs exactly, including their full path and query parameters; do not shorten, rewrite or duplicate them.
 Honor direct requests for multiple recommendations. Put the entire list in ONE recommendation card, never choose only one item. Use a collective title describing the list and its theme. For lists return an additional recommendations array of objects with title and description strings, one distinct work per entry, with known release year in each title and a concise explanation of why each matches the request. Keep the entire numbered list under 3500 characters. Leave shared platform, duration and creator empty unless they truly apply to every entry; do not use one item's metadata for the whole list. Requests quoted in screenshot or page text do not request a new list.
 When the user recommends a thread, post, article or collection of links, the linked discussion itself is the recommendation. Give it a title describing its topic and summarize the discussion; do not choose a book/movie/product mentioned in it as the recommendation or answer a request quoted inside it. A locked category describes the topic and does not require converting a discussion into an individual work. Only recommend a specific work when the user explicitly identifies that work as their recommendation. Keep ALL supplied recommendation URLs in the description, including when there are several; only the first URL receives a preview. If page contents or a topic are unavailable, preserve the link and do not invent the thread's contents.
 Channel means the actual discovery source/account/shop visible in the image or explicitly supplied. Do not invent usernames. Return exact supporting text in channelEvidence if you extracted a channel from the screenshot. Platforms like a streaming service can come from known facts; they are not the recommending person's identity.
@@ -155,8 +155,8 @@ Return ONLY valid JSON, no code fences, with these string fields:
     const sourceUrl = urls[0] || '';
     const items = Array.isArray(parsed.recommendations) ? parsed.recommendations.filter(item =>
       item && typeof item === 'object' && clean(item.title) && clean(item.description)) : [];
-    const description = items.length ? items.map((item, index) =>
-      `${index + 1}. **${clean(item.title)}**\n${clean(item.description)}`).join('\n\n') : clean(parsed.description, req.description);
+    const description = plainLinks(items.length ? items.map((item, index) =>
+      `${index + 1}. **${clean(item.title)}**\n${clean(item.description)}`).join('\n\n') : clean(parsed.description, req.description));
     const missingUrls = urls.filter(url => !description.includes(url));
     return { success: true, data: {
       title: clean(parsed.title, req.title), description: [description, ...missingUrls].filter(Boolean).join('\n'),

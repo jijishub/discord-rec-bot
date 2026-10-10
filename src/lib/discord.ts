@@ -1,6 +1,7 @@
 import { Category, RecFormData, BotPersona, DiscordEmbed, DiscordWebhookPayload } from "@/types";
 import { DEFAULT_CATEGORIES } from "@/lib/categories";
 import { buildRecFields } from "@/lib/rec-fields";
+import { plainLinks } from "@/lib/plain-links";
 
 export function hexToDecimal(hex: string): number {
   const cleanHex = hex.replace("#", "");
@@ -73,18 +74,19 @@ export function buildDiscordEmbeds(
   // Build description content
   const descriptionParts: string[] = [];
 
-  if (data.description && data.description.trim()) {
-    descriptionParts.push(data.description.trim());
+  const description = plainLinks(data.description || '').trim();
+  if (description) {
+    descriptionParts.push(description);
   }
 
   // Keep a visible link even when the recommendation only supplied a preview.
   const previewUrl = data.subEmbed?.url || data.subEmbed?.author?.url;
-  if (previewUrl && !data.description?.includes(previewUrl)) {
+  if (previewUrl && !description.includes(previewUrl)) {
     descriptionParts.push(previewUrl);
   }
 
   if (data.personalNotes && data.personalNotes.trim()) {
-    const formattedNotes = data.personalNotes
+    const formattedNotes = plainLinks(data.personalNotes)
       .trim()
       .split("\n")
       .map((line) => (line.startsWith(">") ? line : `> ${line}`))

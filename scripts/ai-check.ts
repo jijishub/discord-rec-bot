@@ -60,6 +60,11 @@ async function main() {
     assert.ok(thread.data.description.includes('https://example.test/books'));
     assert.equal(thread.data.sourceUrl, 'https://x.com/person/status/123');
     assert.ok(requests.at(-1).messages[0].content.includes('do not choose a book/movie/product mentioned in it'));
+    const productUrl = 'https://shopee.ph/product/419219203/21736776726?smtt=0.138814254-1668094317.9';
+    outputs = [{ ...complete, description: `Check this listing: [${productUrl}](${productUrl})` }];
+    const product = await enhanceRecWithAI({ ...req, category: 'Products', description: productUrl });
+    assert.equal(product.data.description, `Check this listing: ${productUrl}`);
+    assert.ok(requests.at(-1).messages[0].content.includes('Use bare URLs'));
     const recommendations = Array.from({ length: 5 }, (_, index) => ({ title: `Anime ${index + 1} (2020)`, description: `Why choice ${index + 1} matches the request.` }));
     outputs = [complete, { ...complete, title: '5 mystery anime', recommendations }];
     const list = await enhanceRecWithAI({ ...req, prompt: 'recommend me 5 animes like my favorites' });
@@ -74,6 +79,8 @@ async function main() {
     const embeds = buildDiscordEmbeds({ ...list.data, categoryId: 'anime', images: [] }, DEFAULT_CATEGORIES.find((category: any) => category.id === 'anime'), DEFAULT_BOT_PERSONA).embeds;
     assert.equal(embeds.length, 1, 'All five recommendations must share one embed');
     for (const item of recommendations) assert.ok(embeds[0].description.includes(item.title));
+    const pasted = buildDiscordEmbeds({ categoryId: 'anime', images: [], description: `[Shop](${productUrl})`, subEmbed: { url: productUrl } }, DEFAULT_CATEGORIES.find((category: any) => category.id === 'anime'), DEFAULT_BOT_PERSONA).embeds;
+    assert.equal(pasted[0].description, `Shop: ${productUrl}`, 'Normalize links before checking whether the preview URL is already visible');
     outputs = [complete, complete];
     const incompleteList = await enhanceRecWithAI({ ...req, prompt: 'suggest five anime' });
     assert.equal(incompleteList.success, false, 'Never silently return one item when five were requested');
