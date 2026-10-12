@@ -2,8 +2,6 @@
 
  **🌸 Meet Jasmine: turn titles, screenshots, and links into pretty Discord recommendations for anime, books, movies, and more—with AI-assisted summaries and your personal notes.**
 
-> 🍡 **Palette & Mood**: Baby pink (`#fce7f3`), Ayato pastel blue (`#c0c8ff`), Ayato's milktea boba (`#ffd2af`), Dango mochi (`#9cf8b5`), and Japanese sakura blossoms 🌸🧋
-
 > 💭 *this has been a project ive been wanting to make since college*
 
 [![Add Jasmine to Discord](https://img.shields.io/badge/Discord-Add%20Jasmine%20🌸-f472b6?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/oauth2/authorize?client_id=1557445475685113886)
