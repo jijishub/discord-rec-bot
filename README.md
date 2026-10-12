@@ -23,18 +23,18 @@
 
 ---
 
-## ✨ Features
+## 🍡 Features
 
-- 🌸 **Dual Curation Modes**:
+- **Dual Curation Modes**:
   - **Web Studio**: Live side-by-side Discord embed preview, drag-and-drop mosaic gallery (up to 9 images), and 1:1 square canvas icon cropper.
   - **In-Discord Bot (`/rec`)**: Fast slash command with up to 4 image attachments + URLs, routing embeds to whatever channel it's called in.
-- 🌸 **AI-Assisted Drafting**: Review and complete titles, descriptions, genres, platforms, creators, and other details from notes, links, and screenshots through your OpenAI-compatible endpoint. Your selected category stays locked, and personal notes preserve your own opinion.
-- ✧ **Recommendation Lists**: Ask for five anime or another numbered selection. Jasmine puts the full list in **one embed**, with numbered titles and short explanations, and checks the requested count before accepting the response.
-- 🧋 **Threads & Links**: Keep recommendation URLs in the description, including multiple links. The first gets a rich preview when available, with a visible source link. A recommended thread is described by its topic rather than replaced with an individual work mentioned inside it.
-- 🍡 **Dynamic Categories**: Fully customizable categories with built-in flower icons (`/movie.png`, `/anime.png`, `/manga.png`, etc.) synced across devices via Upstash Redis.
-- ୨୧ **Google SSO Admin Portal**: Isolated `/admin` dashboard protected by Google OAuth with cryptographic HMAC session tokens.
-- ✧ **Custom Webhook Destination**: Public visitors can optionally send recommendations to their own server's webhook, backed by strict URL validation and permission checks.
-- 🤍 **Serverless Hosting**: Slash commands and webhooks run on Vercel without a background worker. Upstash Redis is optional for cloud persistence; hosting and AI costs depend on your providers and usage.
+- **AI-Assisted Drafting**: Review and complete titles, descriptions, genres, platforms, creators, and other details from notes, links, and screenshots through your OpenAI-compatible endpoint. Your selected category stays locked, and personal notes preserve your own opinion.
+- **Recommendation Lists**: Ask for five anime or another numbered selection. Jasmine puts the full list in **one embed**, with numbered titles and short explanations, and checks the requested count before accepting the response.
+- **Threads & Links**: Keep recommendation URLs in the description, including multiple links. The first gets a rich preview when available, with a visible source link. A recommended thread is described by its topic rather than replaced with an individual work mentioned inside it.
+- **Dynamic Categories**: Fully customizable categories with built-in flower icons (`/movie.png`, `/anime.png`, `/manga.png`, etc.) synced across devices via Upstash Redis.
+- **Google SSO Admin Portal**: Isolated `/admin` dashboard protected by Google OAuth with cryptographic HMAC session tokens.
+- **Custom Webhook Destination**: Public visitors can optionally send recommendations to their own server's webhook, backed by strict URL validation and permission checks.
+- **Serverless Hosting**: Slash commands and webhooks run on Vercel without a background worker. Upstash Redis is optional for cloud persistence; hosting and AI costs depend on your providers and usage.
 
 ---
 
