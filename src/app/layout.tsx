@@ -10,10 +10,10 @@ export const metadata: Metadata = {
   description: "Aesthetic recommendation creator for ◜― ✿ Jizelle's Space ✿",
   manifest: "/manifest.json",
   icons: {
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>",
-    shortcut: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>",
+    icon: { url: "/maomao-bg.png", type: "image/png" },
+    shortcut: "/maomao-bg.png",
     apple: [
-      { url: "/maomao-bg.png", sizes: "180x180", type: "image/png" },
+      { url: "/maomao-icon-180.png", sizes: "180x180", type: "image/png" },
     ],
   },
   appleWebApp: {
@@ -30,9 +30,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="apple-touch-icon" href="/maomao-bg.png" />
-      </head>
       <body className="antialiased">{children}</body>
     </html>
   );
