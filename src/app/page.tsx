@@ -494,7 +494,7 @@ export default function Home() {
       {/* Main Workspace Layout */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         {/* Top Header / Recommendation Notice Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4.5 sm:px-5 py-3.5 rounded-2xl bg-white/80 border border-pink-100/80 shadow-xs backdrop-blur-xs text-xs sm:text-sm text-slate-600">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 rounded-2xl bg-white/80 border border-pink-100/80 shadow-xs backdrop-blur-xs text-xs sm:text-sm text-slate-600">
           <div className="flex items-center gap-2.5">
             <span className="text-base shrink-0">💌</span>
             <p className="leading-relaxed">
